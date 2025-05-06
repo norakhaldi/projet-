@@ -1,31 +1,43 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');
-const bookRoutes = require('./routes/bookRoutes');
-
+const cors = require('cors');
+const path = require('path');
 
 dotenv.config();
+
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Middleware pour parser le JSON
+// Middleware
+app.use(cors());
 app.use(express.json());
-
-// Connexion à MongoDB
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('Connecté à MongoDB'))
-.catch(err => console.error('Erreur de connexion à MongoDB :', err));
+app.use('/uploads', express.static(path.join(__dirname, 'Uploads')));
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/books', require('./routes/bookRoutes'));
+app.use('/api/cart', require('./routes/cartRoutes'));
 
-// Démarrer le serveur
-app.listen(PORT, () => {
-    console.log(`Serveur démarré sur http://localhost:${PORT}`);
+// MongoDB connection
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+    console.error('Error: MONGO_URI is not defined in the .env file.');
+    process.exit(1);
+}
+
+mongoose.connect(MONGO_URI)
+.then(() => console.log('MongoDB connected'))
+.catch(err => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
 });
 
+// Create uploads directory if it doesn't exist
+const fs = require('fs');
+const uploadDir = path.join(__dirname, 'Uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
 
-
-// Routes
-app.use('/api/books', bookRoutes);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -6,17 +6,11 @@ const User = require('../models/User');
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// 🛠 Middleware pour s'assurer que `express.json()` est bien activé (à mettre dans `server.js` aussi)
-const express = require('express');
-const app = express();
-app.use(express.json());
-
-// 📌 **Enregistrement (Register)**
 exports.register = async (req, res) => {
-    const { username, email, password, role } = req.body;
+    const { name, email, password } = req.body; // Changed username to name to match frontend
 
     try {
-        console.log("🟢 Données reçues :", req.body); // 🔥 Vérifier ce qui est reçu
+        console.log("🟢 Données reçues :", req.body);
 
         // Vérifier si l'utilisateur existe déjà
         const existingUser = await User.findOne({ email });
@@ -24,28 +18,30 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: "L'utilisateur existe déjà." });
         }
 
-        // Créer un nouvel utilisateur avec un rôle par défaut "user"
+        // Créer un nouvel utilisateur
         const user = new User({
-            username,
+            username: name, // Map name to username
             email,
             password,
-            role: role || "user"  // 🔥 Si aucun rôle n'est précisé, c'est un "user"
+            role: "user"
         });
-
-        console.log("🟡 Avant sauvegarde :", user); // 🔥 Vérifie si le `role` est bien défini
 
         await user.save();
 
-        console.log("🟢 Après sauvegarde :", user); // 🔥 Vérifie si le `role` est bien enregistré
+        // Générer un token
+        const token = jwt.sign(
+            { userId: user._id, role: user.role },
+            JWT_SECRET,
+            { expiresIn: "1h" }
+        );
 
-        res.status(201).json({ message: "Utilisateur créé avec succès.", user });
+        res.status(201).json({ message: "Utilisateur créé avec succès.", token, username: user.username });
     } catch (error) {
         console.error("❌ Erreur :", error);
         res.status(500).json({ message: "Erreur serveur.", error });
     }
 };
 
-// 📌 **Connexion (Login)**
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -62,17 +58,16 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: "Identifiants invalides." });
         }
 
-        // Générer un token avec le rôle
+        // Générer un token
         const token = jwt.sign(
-            { userId: user._id, role: user.role }, // 🔥 Ajouter le rôle au token
+            { userId: user._id, role: user.role },
             JWT_SECRET,
             { expiresIn: "1h" }
         );
 
-        // Retourner le token + rôle + nom d'utilisateur
         res.status(200).json({
             token,
-            role: user.role,  // 🔥 Maintenant le rôle est retourné
+            role: user.role,
             username: user.username
         });
 
