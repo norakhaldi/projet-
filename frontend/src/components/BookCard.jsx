@@ -1,20 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import placeholderImage from '@/assets/placeholder-book.png'; // Local fallback image
+import { ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import placeholderImage from '@/assets/placeholder-book.png';
 
 function BookCard({ _id, title, author, price, coverImage, condition, sellerId }) {
-  const { toast } = useToast();
-
-  const handleWishlist = () => {
-    toast({
-      variant: 'destructive',
-      title: 'Not Implemented',
-      description: 'Wishlist functionality is not yet supported by the backend.',
-    });
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-md border border-secondary/30 overflow-hidden hover:shadow-lg transition-shadow">
       <Link to={`/books/${_id}`}>
@@ -37,12 +27,17 @@ function BookCard({ _id, title, author, price, coverImage, condition, sellerId }
           )}
         </Link>
         <div className="mt-4 flex justify-between items-center">
-          <Link to={`/books/${_id}`}>
-            <button className="text-primary hover:text-primary/80">View Details</button>
-          </Link>
-          <button onClick={handleWishlist} className="text-gray-500 hover:text-primary">
-            <Heart className="h-5 w-5" />
-          </button>
+          <span className="text-lg font-bold text-maroon">
+            {typeof price === 'number' ? `$${price.toFixed(2)}` : 'N/A'}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-maroon hover:text-white hover:bg-maroon border-maroon"
+          >
+            <ShoppingCart className="h-4 w-4 mr-1" />
+            Add to Cart
+          </Button>
         </div>
       </div>
     </div>
