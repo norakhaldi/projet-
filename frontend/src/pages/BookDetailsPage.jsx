@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BookDetail from '@/components/BookDetail';
+import BookDetail from '@/components/BookDetails';
 import FeaturedBooks from '@/components/FeaturedBooks';
 import { getBook } from '@/lib/api';
 

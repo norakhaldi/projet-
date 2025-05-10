@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero.jsx';
 import Categories from '@/components/Categories';
 import FeaturedBooks from '@/components/FeaturedBooks';
+import { RecentlyAddedBooks } from '@/components/FeaturedBooks';
 import Footer from '@/components/Footer';
 import { getBooks } from '@/lib/api';
 
@@ -13,6 +14,9 @@ function Index() {
     queryFn: () => getBooks().then(res => res.data),
   });
 
+  // Debug: Log books to see why featuredBooks is empty
+  console.log('Books data:', books);
+
   const featuredBooks = books?.filter(book => book.featured) || [];
   const recentBooks = books?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8) || [];
 
@@ -20,11 +24,16 @@ function Index() {
     <div>
       <Navbar />
       <Hero />
-      <Categories />
       {isLoading ? (
         <div className="text-center py-12">Loading featured books...</div>
       ) : (
         <FeaturedBooks books={featuredBooks} />
+      )}
+      <Categories />
+      {isLoading ? (
+        <div className="text-center py-12">Loading recent books...</div>
+      ) : (
+        <RecentlyAddedBooks books={recentBooks} />
       )}
       <section className="py-16 bg-primary text-white text-center">
         <div className="container mx-auto px-4">
@@ -40,15 +49,6 @@ function Index() {
           </a>
         </div>
       </section>
-      {isLoading ? (
-        <div className="text-center py-12">Loading recent books...</div>
-      ) : (
-        <FeaturedBooks 
-          title="Recently Added" 
-          subtitle="The latest additions to our collection" 
-          books={recentBooks}
-        />
-      )}
       <Footer />
     </div>
   );

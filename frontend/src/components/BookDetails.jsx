@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import { getBook, addToCart } from '@/lib/api';
 import { Heart, ShoppingCart } from 'lucide-react';
 
-function BookDetailsPage() {
+function BookDetail() {
   const { id } = useParams();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -104,4 +104,4 @@ function BookDetailsPage() {
   );
 }
 
-export default BookDetailsPage;
+export default BookDetail;
