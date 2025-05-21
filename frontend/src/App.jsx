@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom"; // Added Link import
 import Index from "./pages/Index.jsx";
-import BookDetailsPage from "./pages/BookDetailsPage";
+
 import SellPage from "./pages/SellPage";
 import CartPage from "./pages/CartPage";
 import LoginPage from "./pages/LoginPage";
@@ -17,6 +17,9 @@ import ReturnsExchanges from './pages/ReturnsExchanges.jsx';
 import Contact from './pages/Contact.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
 import Navbar from './components/Navbar';
+import LogoutPage from './components/LogoutPage';
+import AdminDashboard from './components/AdminDashboard';
+import BookDetail from './components/BookDetail';
 const queryClient = new QueryClient();
 
 function App() {
@@ -24,12 +27,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Sonner />
+       
         <BrowserRouter>
         
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/book/:id" element={<BookDetailsPage />} />
+        
             <Route path="/sell" element={<SellPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -40,6 +43,9 @@ function App() {
             <Route path="/returns" element={<ReturnsExchanges />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/logout" element={<LogoutPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/books/:id" element={<BookDetail />} /> {/* Use BookDetail */}
             <Route path="*" element={<div>404 Oops! Page not found <Link to="/">Return to Home</Link></div>} />
           </Routes>
         </BrowserRouter>

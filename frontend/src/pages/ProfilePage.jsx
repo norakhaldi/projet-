@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate
 import { User, Book as BookIcon, Package, Heart, Settings, LogOut, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +12,7 @@ import { getUser, getUserListings } from '@/lib/api';
 function ProfilePage() {
   const [activeTab, setActiveTab] = useState('listings');
   const { toast } = useToast();
+  const navigate = useNavigate(); // Added for navigation
 
   const { data: userData, isLoading: isUserLoading } = useQuery({
     queryKey: ['user'],
@@ -36,6 +37,33 @@ function ProfilePage() {
       title: "Not Implemented",
       description: "Profile updates are not yet supported by the backend.",
     });
+  };
+
+  // Add logout function
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear localStorage and redirect
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      navigate('/', { replace: true }); // Redirect to homepage
+    }
   };
 
   if (isUserLoading) {
@@ -118,10 +146,13 @@ function ProfilePage() {
                       <Settings className="mr-3 h-5 w-5" />
                       <span>Settings</span>
                     </button>
-                    <Link to="/logout" className="w-full flex items-center px-3 py-2 text-sm rounded-md text-red-600 hover:bg-red-50">
+                    <button
+                      onClick={handleLogout} // Changed from Link to button with onClick
+                      className="w-full flex items-center px-3 py-2 text-sm rounded-md text-red-600 hover:bg-red-50"
+                    >
                       <LogOut className="mr-3 h-5 w-5" />
                       <span>Sign Out</span>
-                    </Link>
+                    </button>
                   </nav>
                 </div>
               </div>

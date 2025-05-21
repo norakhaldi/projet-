@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User } from 'lucide-react'; // Icône de profil
+import { User } from 'lucide-react';
 
 function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token')); // Vérifie si un token existe
-  const user = { name: localStorage.getItem('username') || 'John Smith', email: 'john.smith@example.com' }; // Récupère le nom
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token')); // Initial state
+  const user = { name: localStorage.getItem('username') || 'John Smith', email: 'john.smith@example.com' };
   const navigate = useNavigate();
 
-  // Met à jour l'état si localStorage change
+  // Optional: Remove the storage event listener if you want to re-check localStorage on every render
+  // Alternatively, you can keep this if you need cross-tab synchronization
   useEffect(() => {
     const handleStorageChange = () => {
       setIsLoggedIn(!!localStorage.getItem('token'));
@@ -16,13 +17,34 @@ function Navbar() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Fonction de déconnexion
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    setIsLoggedIn(false);
-    navigate('/');
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      setIsLoggedIn(!!localStorage.getItem('token')); // Force re-check
+      navigate('/', { replace: true });
+    }
   };
+
+  // Re-check isLoggedIn on every render to ensure it reflects localStorage changes
+  const currentIsLoggedIn = !!localStorage.getItem('token');
 
   return (
     <nav className="bg-white shadow-md">
@@ -34,7 +56,7 @@ function Navbar() {
           <Link to="/" className="text-gray-800 hover:text-maroon">Home</Link>
           <Link to="/books" className="text-gray-800 hover:text-maroon">Browse Books</Link>
           <Link to="/sell" className="text-gray-800 hover:text-maroon">Sell Books</Link>
-          {isLoggedIn ? (
+          {currentIsLoggedIn ? (
             <div className="relative group">
               <Link to="/profile" className="text-gray-800 hover:text-maroon flex items-center">
                 <User
