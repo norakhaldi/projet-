@@ -9,9 +9,14 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173' })); // Match your frontend port
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'Uploads')));
+
+// Test route to confirm server is up
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is up and running!' });
+});
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -26,11 +31,11 @@ if (!MONGO_URI) {
 }
 
 mongoose.connect(MONGO_URI)
-.then(() => console.log('MongoDB connected'))
-.catch(err => {
-    console.error('MongoDB connection error:', err.message);
-    process.exit(1);
-});
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => {
+        console.error('MongoDB connection error:', err.message);
+        process.exit(1);
+    });
 
 // Create uploads directory if it doesn't exist
 const fs = require('fs');

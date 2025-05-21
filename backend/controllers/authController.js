@@ -7,7 +7,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.register = async (req, res) => {
-    const { name, email, password } = req.body; // Changed username to name to match frontend
+    const { username, email, password, role } = req.body; // Destructure username and role
 
     try {
         console.log("🟢 Données reçues :", req.body);
@@ -20,10 +20,10 @@ exports.register = async (req, res) => {
 
         // Créer un nouvel utilisateur
         const user = new User({
-            username: name, // Map name to username
+            username, // Use username directly
             email,
             password,
-            role: "user"
+            role: role || "user" // Use provided role, default to "user"
         });
 
         await user.save();
@@ -41,7 +41,6 @@ exports.register = async (req, res) => {
         res.status(500).json({ message: "Erreur serveur.", error });
     }
 };
-
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
