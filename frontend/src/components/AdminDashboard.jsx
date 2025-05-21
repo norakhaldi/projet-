@@ -21,6 +21,8 @@ function AdminDashboard() {
     pages: '',
     condition: 'new',
   });
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [error, setError] = useState(null); // Add error state
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -68,7 +70,10 @@ function AdminDashboard() {
 
   // Fetch all books
   const fetchBooks = async () => {
+    setIsLoading(true);
+    setError(null);
     const token = localStorage.getItem('token');
+    logToStorage(`fetchBooks: Starting request with token: ${token ? 'Yes' : 'No'}`);
     try {
       const response = await fetch('http://localhost:5000/api/books', {
         headers: { Authorization: `Bearer ${token}` },
@@ -77,8 +82,9 @@ function AdminDashboard() {
       const data = await response.json();
       logToStorage(`fetchBooks: Response data: ${JSON.stringify(data)}`);
       if (response.ok) {
-        setBooks(data);
+        setBooks(data); // This should now execute
       } else {
+        setError(data.message || 'Erreur lors de la récupération des livres.');
         toast({
           variant: 'destructive',
           title: 'Erreur',
@@ -90,11 +96,13 @@ function AdminDashboard() {
         }
       }
     } catch (error) {
-      logToStorage(`fetchBooks: Error: ${error.message}`);
+      logToStorage(`fetchBooks: Error: ${error.name} - ${error.message}`);
+      setError('Erreur réseau.');
       toast({ variant: 'destructive', title: 'Erreur', description: 'Erreur réseau.' });
+    } finally {
+      setIsLoading(false);
     }
   };
-
   // Create book
   const createBook = async (e) => {
     e.preventDefault();
@@ -247,15 +255,15 @@ function AdminDashboard() {
     <div>
       <Navbar />
       <div className="container mx-auto px-4 py-12">
-        <h1 className="text-2xl font-bold mb-6">Tableau de bord Admin - Gestion des Livres</h1>
+        <h1 className="text-2xl font-bold mb-6 text-black">Tableau de bord Admin - Gestion des Livres</h1>
 
         {/* Form for Create/Update */}
         <form
           onSubmit={selectedBook ? updateBook : createBook}
-          className="bg-white p-6 rounded-lg shadow-md mb-6"
+          className="bg-white p-6 rounded-lg shadow-md mb-6 border"
           encType="multipart/form-data"
         >
-          <h2 className="text-xl font-semibold mb-4">{selectedBook ? 'Modifier un livre' : 'Ajouter un livre'}</h2>
+          <h2 className="text-xl font-semibold mb-4 text-black">{selectedBook ? 'Modifier un livre' : 'Ajouter un livre'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
@@ -365,47 +373,57 @@ function AdminDashboard() {
 
         {/* Books List */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Liste des Livres</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {books.map((book) => (
-              <div key={book._id} className="border p-4 rounded">
-                <h3 className="font-bold">{book.title}</h3>
-                <p>Author: {book.author}</p>
-                <p>Price: ${book.price}</p>
-                <p>Seller: {book.sellerId?.username || 'N/A'}</p>
-                {book.coverImage && (
-                  <img src={book.coverImage} alt={book.title} className="w-20 h-20 object-cover mt-2" />
-                )}
-                <div className="mt-2">
-                  <Button
-                    onClick={() => {
-                      setSelectedBook(book);
-                      setFormData({
-                        title: book.title,
-                        author: book.author,
-                        description: book.description,
-                        price: book.price,
-                        category: book.category,
-                        isbn: book.isbn,
-                        publishedYear: book.publishedYear,
-                        pages: book.pages,
-                        condition: book.condition,
-                      });
-                    }}
-                    className="mr-2 bg-blue-500 text-white"
-                  >
-                    Modifier
-                  </Button>
-                  <Button
-                    onClick={() => deleteBook(book._id)}
-                    className="bg-red-500 text-white"
-                  >
-                    Supprimer
-                  </Button>
+          <h2 className="text-xl font-semibold mb-4 text-black">Liste des Livres</h2>
+          {isLoading ? (
+            <div className="text-center py-4">Chargement des livres...</div>
+          ) : error ? (
+            <div className="text-center py-4 text-red-600">
+              Erreur lors du chargement des livres : {error}
+            </div>
+          ) : books.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {books.map((book) => (
+                <div key={book._id} className="border p-4 rounded">
+                  <h3 className="font-bold">{book.title}</h3>
+                  <p>Author: {book.author}</p>
+                  <p>Price: ${book.price}</p>
+                  <p>Seller: {book.sellerId?.username || 'N/A'}</p>
+                  {book.coverImage && (
+                    <img src={book.coverImage} alt={book.title} className="w-20 h-20 object-cover mt-2" />
+                  )}
+                  <div className="mt-2">
+                    <Button
+                      onClick={() => {
+                        setSelectedBook(book);
+                        setFormData({
+                          title: book.title,
+                          author: book.author,
+                          description: book.description,
+                          price: book.price,
+                          category: book.category,
+                          isbn: book.isbn,
+                          publishedYear: book.publishedYear,
+                          pages: book.pages,
+                          condition: book.condition,
+                        });
+                      }}
+                      className="mr-2 bg-primary text-white"
+                    >
+                      Modifier
+                    </Button>
+                    <Button
+                      onClick={() => deleteBook(book._id)}
+                      className="bg-primary text-white"
+                    >
+                      Supprimer
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4">Aucun livre trouvé.</div>
+          )}
         </div>
       </div>
       <Footer />
