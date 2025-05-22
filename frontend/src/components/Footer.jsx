@@ -10,7 +10,7 @@ function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
               <Book className="h-8 w-8 mr-2" />
-              <span className="font-serif text-2xl font-bold">Crimson Book Emporium</span>
+              <span className="font-serif text-2xl font-bold"> Books Emporium</span>
             </div>
             <p className="mb-4 text-white/80">
               Your destination for buying and selling new and used books. Join our community of book lovers and find your next literary adventure.

@@ -50,7 +50,7 @@ function Navbar() {
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
-          <span className="text-2xl font-bold text-maroon">Crimson Book Emporium</span>
+          <span className="text-2xl font-bold text-maroon"> Books Emporium</span>
         </div>
         <div className="flex space-x-6 items-center">
           <Link to="/" className="text-gray-800 hover:text-maroon">Home</Link>

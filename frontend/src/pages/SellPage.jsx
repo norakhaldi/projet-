@@ -12,7 +12,7 @@ function SellPage() {
           <div className="text-center mb-10">
             <h1 className="text-4xl font-serif font-bold mb-4">Sell Your Books</h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Turn your used books into cash by listing them on Crimson Book Emporium. 
+              Turn your used books into cash by listing them on our Book Emporium. 
               It's easy to get started - just fill out the form below with your book's details.
             </p>
           </div>

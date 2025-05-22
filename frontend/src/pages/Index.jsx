@@ -35,11 +35,11 @@ function Index() {
       ) : (
         <RecentlyAddedBooks books={recentBooks} />
       )}
-      <section className="py-16 bg-primary text-white text-center">
+      <section className="pt-16 pb-0 bg-primary text-white text-center border-b border-gray-300"> {/* Changed to match footer line */}
         <div className="container mx-auto px-4">
           <h2 className="font-serif text-3xl font-bold mb-4">Have Books to Sell?</h2>
           <p className="text-xl mb-6 max-w-xl mx-auto">
-            List your books on Crimson Book Emporium and connect with readers looking for their next great read.
+            List your books on our Book Emporium and connect with readers looking for their next great read.
           </p>
           <a 
             href="/sell" 

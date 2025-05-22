@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -25,13 +25,21 @@ function AdminDashboard() {
   const [error, setError] = useState(null); // Add error state
   const { toast } = useToast();
   const navigate = useNavigate();
+  const formRef = useRef(null); // Ref for the form
 
   // Persistent logging function
   const logToStorage = (message) => {
-    const logs = JSON.parse(localStorage.getItem('debugLogs') || '[]');
-    logs.push({ timestamp: new Date().toISOString(), message });
-    localStorage.setItem('debugLogs', JSON.stringify(logs));
-    console.log(message);
+    try {
+      const logs = JSON.parse(localStorage.getItem('debugLogs') || '[]');
+      logs.push({ timestamp: new Date().toISOString(), message });
+      if (logs.length > 50) {
+        logs.splice(0, logs.length - 50); // Keep only the last 50 logs
+      }
+      localStorage.setItem('debugLogs', JSON.stringify(logs));
+    } catch (error) {
+      console.warn('Log storage failed (QuotaExceededError):', error.message);
+    }
+    console.log(message); // Always log to console
   };
 
   // Admin check and fetch books
@@ -82,7 +90,7 @@ function AdminDashboard() {
       const data = await response.json();
       logToStorage(`fetchBooks: Response data: ${JSON.stringify(data)}`);
       if (response.ok) {
-        setBooks(data); // This should now execute
+        setBooks(data);
       } else {
         setError(data.message || 'Erreur lors de la récupération des livres.');
         toast({
@@ -103,6 +111,7 @@ function AdminDashboard() {
       setIsLoading(false);
     }
   };
+
   // Create book
   const createBook = async (e) => {
     e.preventDefault();
@@ -239,6 +248,39 @@ function AdminDashboard() {
     }
   };
 
+  // Populate form and scroll to form when selectedBook changes
+  useEffect(() => {
+    if (selectedBook) {
+      logToStorage(`Populating form with book: ${selectedBook.title}`);
+      setFormData({
+        title: selectedBook.title || '',
+        author: selectedBook.author || '',
+        description: selectedBook.description || '',
+        price: selectedBook.price || '',
+        category: selectedBook.category || '',
+        isbn: selectedBook.isbn || '',
+        publishedYear: selectedBook.publishedYear || '',
+        pages: selectedBook.pages || '',
+        condition: selectedBook.condition || 'new',
+      });
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      setFormData({
+        title: '',
+        author: '',
+        description: '',
+        price: '',
+        category: '',
+        isbn: '',
+        publishedYear: '',
+        pages: '',
+        condition: 'new',
+      });
+    }
+  }, [selectedBook]);
+
   // Render based on isAdmin state
   if (isAdmin === null) {
     logToStorage('AdminDashboard: Rendering loading state');
@@ -259,88 +301,148 @@ function AdminDashboard() {
 
         {/* Form for Create/Update */}
         <form
+          ref={formRef}
           onSubmit={selectedBook ? updateBook : createBook}
-          className="bg-white p-6 rounded-lg shadow-md mb-6 border"
+          className="bg-white p-6 rounded-lg shadow-md mb-6 border-2 border-primary" // Updated border to primary
           encType="multipart/form-data"
         >
           <h2 className="text-xl font-semibold mb-4 text-black">{selectedBook ? 'Modifier un livre' : 'Ajouter un livre'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Titre"
-              className="border p-2 rounded"
-              required
-            />
-            <input
-              type="text"
-              value={formData.author}
-              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-              placeholder="Auteur"
-              className="border p-2 rounded"
-              required
-            />
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Description"
-              className="border p-2 rounded col-span-2"
-            />
-            <input
-              type="number"
-              step="0.01"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              placeholder="Prix"
-              className="border p-2 rounded"
-              required
-            />
-            <input
-              type="text"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              placeholder="Catégorie"
-              className="border p-2 rounded"
-            />
-            <input
-              type="text"
-              value={formData.isbn}
-              onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-              placeholder="ISBN"
-              className="border p-2 rounded"
-            />
-            <input
-              type="text"
-              value={formData.publishedYear}
-              onChange={(e) => setFormData({ ...formData, publishedYear: e.target.value })}
-              placeholder="Année de publication"
-              className="border p-2 rounded"
-            />
-            <input
-              type="number"
-              value={formData.pages}
-              onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
-              placeholder="Nombre de pages"
-              className="border p-2 rounded"
-            />
-            <select
-              value={formData.condition}
-              onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-              className="border p-2 rounded"
-            >
-              <option value="new">Neuf</option>
-              <option value="like-new">Comme neuf</option>
-              <option value="very-good">Très bon</option>
-              <option value="good">Bon</option>
-              <option value="acceptable">Acceptable</option>
-            </select>
-            <input
-              type="file"
-              name="image"
-              onChange={(e) => setFormData({ ...formData, coverImage: e.target.files[0] })}
-              className="border p-2 rounded col-span-2"
-            />
+            {/* Titre */}
+            <div className="flex flex-col">
+              <label htmlFor="title" className="mb-1 font-medium text-black">Titre</label>
+              <input
+                type="text"
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Titre"
+                className="border p-2 rounded"
+                required
+              />
+            </div>
+
+            {/* Auteur */}
+            <div className="flex flex-col">
+              <label htmlFor="author" className="mb-1 font-medium text-black">Auteur</label>
+              <input
+                type="text"
+                id="author"
+                value={formData.author}
+                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                placeholder="Auteur"
+                className="border p-2 rounded"
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div className="flex flex-col col-span-2">
+              <label htmlFor="description" className="mb-1 font-medium text-black">Description</label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Description"
+                className="border border-primary p-2 rounded" // Added border-primary
+              />
+            </div>
+
+            {/* Prix */}
+            <div className="flex flex-col">
+              <label htmlFor="price" className="mb-1 font-medium text-black">Prix</label>
+              <input
+                type="number"
+                id="price"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                placeholder="Prix"
+                className="border border-primary p-2 rounded" // Added border-primary
+                required
+              />
+            </div>
+
+            {/* Catégorie */}
+            <div className="flex flex-col">
+              <label htmlFor="category" className="mb-1 font-medium text-black">Catégorie</label>
+              <input
+                type="text"
+                id="category"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                placeholder="Catégorie"
+                className="border border-primary p-2 rounded" // Already has border, updated to border-primary
+              />
+            </div>
+
+            {/* ISBN */}
+            <div className="flex flex-col">
+              <label htmlFor="isbn" className="mb-1 font-medium text-black">ISBN</label>
+              <input
+                type="text"
+                id="isbn"
+                value={formData.isbn}
+                onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
+                placeholder="ISBN"
+                className="border p-2 rounded"
+              />
+            </div>
+
+            {/* Année de publication */}
+            <div className="flex flex-col">
+              <label htmlFor="publishedYear" className="mb-1 font-medium text-black">Année de publication</label>
+              <input
+                type="text"
+                id="publishedYear"
+                value={formData.publishedYear}
+                onChange={(e) => setFormData({ ...formData, publishedYear: e.target.value })}
+                placeholder="Année de publication"
+                className="border border-primary p-2 rounded" // Already has border, updated to border-primary
+              />
+            </div>
+
+            {/* Nombre de pages */}
+            <div className="flex flex-col">
+              <label htmlFor="pages" className="mb-1 font-medium text-black">Nombre de pages</label>
+              <input
+                type="number"
+                id="pages"
+                value={formData.pages}
+                onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
+                placeholder="Nombre de pages"
+                className="border border-primary p-2 rounded" // Added border-primary
+              />
+            </div>
+
+            {/* Condition */}
+            <div className="flex flex-col">
+              <label htmlFor="condition" className="mb-1 font-medium text-black">Condition</label>
+              <select
+                id="condition"
+                value={formData.condition}
+                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                className="border border-primary p-2 rounded" // Added border-primary
+              >
+                <option value="new">Neuf</option>
+                <option value="like-new">Comme neuf</option>
+                <option value="very-good">Très bon</option>
+                <option value="good">Bon</option>
+                <option value="acceptable">Acceptable</option>
+              </select>
+            </div>
+
+            {/* Image */}
+            <div className="flex flex-col col-span-2">
+              <label htmlFor="image" className="mb-1 font-medium text-black">Image</label>
+              <input
+                type="file"
+                id="image"
+                name="image"
+                onChange={(e) => setFormData({ ...formData, coverImage: e.target.files[0] })}
+                className="border p-2 rounded"
+              />
+            </div>
           </div>
           <div className="mt-4">
             <Button type="submit" className="bg-primary text-white mr-2">
@@ -394,18 +496,8 @@ function AdminDashboard() {
                   <div className="mt-2">
                     <Button
                       onClick={() => {
+                        logToStorage(`Modifying book: ${book.title}`);
                         setSelectedBook(book);
-                        setFormData({
-                          title: book.title,
-                          author: book.author,
-                          description: book.description,
-                          price: book.price,
-                          category: book.category,
-                          isbn: book.isbn,
-                          publishedYear: book.publishedYear,
-                          pages: book.pages,
-                          condition: book.condition,
-                        });
                       }}
                       className="mr-2 bg-primary text-white"
                     >

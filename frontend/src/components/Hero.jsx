@@ -20,7 +20,7 @@ const Hero = () => {
           Discover Your Next Literary Adventure
         </h1>
         <p className="text-xl md:text-2xl max-w-2xl mb-8">
-          Buy and sell new and used books at the Crimson Book Emporium, your community marketplace for bibliophiles.
+          Buy and sell new and used books at the Book Emporium, your community marketplace for bibliophiles.
         </p>
         <div className="flex flex-col md:flex-row gap-4 w-full max-w-xl">
           <div className="relative flex-1">
