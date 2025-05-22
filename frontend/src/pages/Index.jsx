@@ -9,16 +9,27 @@ import Footer from '@/components/Footer';
 import { getBooks } from '@/lib/api';
 
 function Index() {
-  const { data: books, isLoading } = useQuery({
+  const { data: books, isLoading, error } = useQuery({
     queryKey: ['books'],
     queryFn: () => getBooks().then(res => res.data),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache (optionnel)
   });
 
-  // Debug: Log books to see why featuredBooks is empty
+  // Debug: logs
   console.log('Books data:', books);
+  if (error) console.error('Failed to load books:', error);
 
-  const featuredBooks = books?.filter(book => book.featured) || [];
-  const recentBooks = books?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8) || [];
+  // Assure-toi que books est un tableau
+  const booksArray = Array.isArray(books) ? books : [];
+
+  // Filtrer livres mis en avant
+  const featuredBooks = booksArray.filter(book => book.featured);
+
+  // Trier par date création décroissante pour recent
+  const recentBooks = booksArray
+    .slice() // copie pour ne pas muter l'original
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 8);
 
   return (
     <div>
@@ -35,7 +46,7 @@ function Index() {
       ) : (
         <RecentlyAddedBooks books={recentBooks} />
       )}
-      <section className="pt-16 pb-0 bg-primary text-white text-center border-b border-gray-300"> {/* Changed to match footer line */}
+      <section className="pt-16 pb-0 bg-primary text-white text-center border-b border-gray-300">
         <div className="container mx-auto px-4">
           <h2 className="font-serif text-3xl font-bold mb-4">Have Books to Sell?</h2>
           <p className="text-xl mb-6 max-w-xl mx-auto">

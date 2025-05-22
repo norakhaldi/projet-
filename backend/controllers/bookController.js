@@ -1,5 +1,17 @@
 const Book = require('../models/Book');
 
+
+exports.getFeaturedBooks = async (req, res) => {
+  try {
+    const featuredBooks = await Book.find({ featured: true }).limit(20);
+    res.json(featuredBooks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error while fetching featured books' });
+  }
+};
+
+
 exports.getAllBooks = async (req, res) => {
     try {
         const books = await Book.find().populate('sellerId', 'username');

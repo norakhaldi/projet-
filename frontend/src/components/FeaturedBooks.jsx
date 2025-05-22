@@ -1,20 +1,63 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import BookCard from './BookCard';
-
-// Fallback data for Featured Books with new cover images
-const defaultFeaturedBooks = [
-  { _id: '1', title: 'A Game of Thrones', author: 'George R.R. Martin', price: 29.00, coverImage: 'https://images.unsplash.com/photo-1589820296156-2454bb8a64ad?w=400', condition: 'like-new', sellerId: 'seller1', category: 'fantasy' },
-  { _id: '2', title: 'Cards on the Table', author: 'Agatha Christie', price: 15.00, coverImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400', condition: 'like-new', sellerId: 'seller2', category: 'mystery' },
-  { _id: '3', title: 'The Curious Incident of the Dog in the Night-Time', author: 'Mark Haddon', price: 40.00, coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400', condition: 'like-new', sellerId: 'seller3', category: 'fiction' },
-];
 
 function FeaturedBooks({
   title = 'Featured Books',
   subtitle = 'Discover handpicked titles from our collection',
-  books = [],
 }) {
-  // Use defaultFeaturedBooks if books prop is empty
-  const displayBooks = books.length > 0 ? books : defaultFeaturedBooks;
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchFeaturedBooks() {
+      try {
+        const response = await fetch('http://localhost:5000/api/books/featured');
+
+        if (!response.ok) throw new Error('Failed to fetch featured books');
+        const data = await response.json();
+        setBooks(data);
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError('Could not load featured books.');
+        setBooks([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFeaturedBooks();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-12 paper-texture">
+        <div className="container mx-auto px-4 text-center">
+          <p>Loading featured books...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-12 paper-texture">
+        <div className="container mx-auto px-4 text-center text-red-600">
+          <p>{error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (books.length === 0) {
+    return (
+      <section className="py-12 paper-texture">
+        <div className="container mx-auto px-4 text-center text-gray-500">
+          <p>No featured books available at the moment.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-12 paper-texture">
@@ -24,32 +67,26 @@ function FeaturedBooks({
           <p className="text-gray-600 max-w-xl mx-auto">{subtitle}</p>
         </div>
 
-        {displayBooks.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            No {title.toLowerCase()} available at the moment.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {displayBooks.map((book) => (
-              <BookCard
-                key={book._id}
-                _id={book._id}
-                title={book.title}
-                author={book.author}
-                price={book.price}
-                coverImage={book.coverImage}
-                condition={book.condition}
-                sellerId={book.sellerId}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {books.map((book) => (
+            <BookCard
+              key={book._id}
+              _id={book._id}
+              title={book.title}
+              author={book.author}
+              price={book.price}
+              coverImage={book.coverImage}
+              condition={book.condition}
+              sellerId={book.sellerId}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-// Composant pour Recently Added avec différentes catégories
+// Composant RecentlyAddedBooks inchangé, tu peux le garder tel quel
 function RecentlyAddedBooks({ books = [] }) {
   return (
     <section className="py-12 paper-texture">
