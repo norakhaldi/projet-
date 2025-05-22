@@ -2,19 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/context/CartContext';
 
 function BookCard({ _id, title, author, price, coverImage, condition, sellerId }) {
   const { toast } = useToast();
+  const { addToCart, cartCount } = useCart(); // ✅ Ajout de cartCount
 
   const handleAddToWishlist = (e) => {
     e.preventDefault();
-  
     const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
     const existing = wishlist.find(item => item._id === _id);
     if (!existing) {
       wishlist.push({ _id, title, author, price, coverImage, condition, sellerId });
       localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  
       toast({
         title: 'Ajouté à la Wishlist',
         description: `${title} a été ajouté à votre wishlist.`,
@@ -26,12 +26,13 @@ function BookCard({ _id, title, author, price, coverImage, condition, sellerId }
       });
     }
   };
-  
+
   const handleAddToCart = (e) => {
     e.preventDefault();
+    addToCart({ _id, title, author, price, coverImage, condition, sellerId });
     toast({
-      title: 'Added to Cart',
-      description: `${title} has been added to your cart.`,
+      title: 'Ajouté au Panier',
+      description: `${title} a été ajouté à votre panier.`,
     });
   };
 
@@ -56,7 +57,10 @@ function BookCard({ _id, title, author, price, coverImage, condition, sellerId }
         </div>
       </Link>
 
-      {/* Always visible, white icons */}
+      {/* Cart icon and count */}
+     
+
+      {/* Action buttons */}
       <div className="flex justify-center space-x-6 mt-4">
         <button
           onClick={handleAddToWishlist}
