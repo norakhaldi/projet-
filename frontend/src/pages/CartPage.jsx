@@ -46,12 +46,12 @@ function CartPage() {
               Continue Shopping
             </Button>
           </Link>
-          <Button
-            className="bg-primary text-white hover:bg-primary/90"
-            onClick={() => alert('Checkout not implemented yet.')}
-          >
-            confirm Purchase
-          </Button>
+          <Link to="/checkout">
+  <Button className="bg-primary text-white hover:bg-primary/90">
+    Confirm Purchase
+  </Button>
+</Link>
+
         </div>
       </div>
       <Footer />

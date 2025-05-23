@@ -20,6 +20,8 @@ import Navbar from './components/Navbar';
 import LogoutPage from './components/LogoutPage';
 import AdminDashboard from './components/AdminDashboard';
 import BookDetail from './components/BookDetail';
+import CheckoutPage from './pages/CheckoutPage';
+import OrderConfirmation from "@/pages/OrderConfirmation";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ function App() {
               <Route path="/logout" element={<LogoutPage />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/books/:id" element={<BookDetail />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route
                 path="*"
                 element={

@@ -22,6 +22,8 @@ app.get('/test', (req, res) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/books', require('./routes/bookRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
+app.use('/api/orders', require('./routes/order'));
+
 
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI;
