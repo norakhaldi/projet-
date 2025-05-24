@@ -4,9 +4,22 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/context/CartContext';
 
-function BookCard({ _id, title, author, price, coverImage, condition, sellerId }) {
+function BookCard(props) {
   const { toast } = useToast();
-  const { addToCart, cartCount } = useCart(); // ✅ Ajout de cartCount
+  const { addToCart, cartCount } = useCart();
+
+  // Supporte à la fois props.book et les props individuels
+  const book = props.book || props;
+
+  const {
+    _id,
+    title,
+    author,
+    price,
+    coverImage,
+    condition,
+    sellerId,
+  } = book;
 
   const handleAddToWishlist = (e) => {
     e.preventDefault();
@@ -52,13 +65,10 @@ function BookCard({ _id, title, author, price, coverImage, condition, sellerId }
           {sellerId && typeof sellerId === 'object' && sellerId.username ? (
             <p className="text-gray-500 text-sm">Seller: {sellerId.username}</p>
           ) : (
-            <p className="text-gray-500 text-sm">Seller: {sellerId}</p>
+            <p className="text-gray-500 text-sm">Seller: {sellerId || "Unknown"}</p>
           )}
         </div>
       </Link>
-
-      {/* Cart icon and count */}
-     
 
       {/* Action buttons */}
       <div className="flex justify-center space-x-6 mt-4">

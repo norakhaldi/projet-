@@ -22,7 +22,7 @@ import AdminDashboard from './components/AdminDashboard';
 import BookDetail from './components/BookDetail';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmation from "@/pages/OrderConfirmation";
-
+import SearchResults from './pages/SearchResults';
 const queryClient = new QueryClient();
 
 function App() {
@@ -51,6 +51,7 @@ function App() {
               <Route path="/books/:id" element={<BookDetail />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
+              <Route path="/search" element={<SearchResults />} />
               <Route
                 path="*"
                 element={

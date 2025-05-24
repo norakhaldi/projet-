@@ -100,3 +100,27 @@ exports.deleteBook = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la suppression du livre.', error });
     }
 };
+exports.searchBooks = async (req, res) => {
+    const query = req.query.q;
+  
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required." });
+    }
+  
+    try {
+      const regex = new RegExp(query, "i"); // "i" = insensitive (e.g. matches "Harry" or "harry")
+      const results = await Book.find({
+        $or: [
+          { title: { $regex: regex } },
+          { author: { $regex: regex } },
+          { isbn: { $regex: regex } },
+        ],
+      }).populate('sellerId', 'username');
+  
+      res.status(200).json(results);
+    } catch (error) {
+      console.error("Error during search:", error);
+      res.status(500).json({ message: "Server error while searching books." });
+    }
+  };
+  

@@ -24,6 +24,10 @@ router.get('/featured', bookController.getFeaturedBooks);
 // Routes pour utilisateurs authentifiés
 router.get('/user/listings', authenticate, bookController.getUserListings); // Get user's listed books
 
+// Search books by title, author, or ISBN
+router.get('/search', bookController.searchBooks);
+
+
 // Attention : cette route doit venir après toutes les routes spécifiques
 router.get('/:id', bookController.getBookById); // Voir un livre par ID
 
