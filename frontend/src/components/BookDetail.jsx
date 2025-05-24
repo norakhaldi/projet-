@@ -8,12 +8,12 @@ import Footer from '@/components/Footer';
 import FeaturedBooks from '@/components/FeaturedBooks';
 import { getBook } from '@/lib/api';
 import { Heart, ShoppingCart } from 'lucide-react';
-import { useCart } from '@/context/CartContext'; // ✅ Ajouté
+import { useCart } from '@/context/CartContext';
 
 function BookDetail() {
   const { id } = useParams();
   const { toast } = useToast();
-  const { addToCart } = useCart(); // ✅ Hook contexte panier
+  const { addToCart } = useCart();
 
   const { data: book, isLoading, error } = useQuery({
     queryKey: ['book', id],
@@ -29,7 +29,7 @@ function BookDetail() {
   };
 
   const handleAddToCart = () => {
-    addToCart(book); // ✅ Ajout au panier depuis contexte
+    addToCart(book);
     toast({
       title: "Ajouté au panier",
       description: `${book.title} a été ajouté à votre panier.`,
@@ -44,14 +44,14 @@ function BookDetail() {
       <Navbar />
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-          <div className="w-full h-auto flex justify-center items-center bg-white p-4 border rounded-lg shadow-md">
-  <img
-    src={book.coverImage || '/placeholder-book.jpg'}
-    alt={book.title}
-    className="max-h-[500px] w-auto object-contain"
-    onError={(e) => e.target.src = '/placeholder-book.jpg'}
-  />
-</div>
+          <div className="w-full min-h-[600px] flex justify-center items-center bg-white p-6 border rounded-lg shadow-md">
+            <img
+              src={book.coverImage || '/placeholder-book.jpg'}
+              alt={book.title}
+              className="max-h-[1000px] max-w-full object-contain"
+              onError={(e) => e.target.src = '/placeholder-book.jpg'}
+            />
+          </div>
 
           <div>
             <h1 className="text-3xl font-serif font-bold mb-4">{book.title}</h1>
@@ -59,13 +59,14 @@ function BookDetail() {
             <p className="text-2xl font-bold text-red-600 mb-4">DA{book.price.toFixed(2)}</p>
             <p className="text-gray-700 mb-6">{book.description || 'No Description .'}</p>
             <div className="mb-6 space-y-2">
-              <p><strong></strong> <span className="text-green-600">{book.condition}</span></p>
-              {book.isbn && <p><strong>ISBN :</strong> {book.isbn}</p>}
-              {book.publishedYear && <p><strong>Year :</strong> {book.publishedYear}</p>}
-              {book.pages && <p><strong>Pages :</strong> {book.pages}</p>}
-              {book.category && <p><strong>Category :</strong> {book.category}</p>}
+              <p><strong>Title:</strong> {book.title}</p>
+              <p><strong>Condition:</strong> <span className="text-green-600">{book.condition}</span></p>
+              {book.isbn && <p><strong>ISBN:</strong> {book.isbn}</p>}
+              {book.publishedYear && <p><strong>Year:</strong> {book.publishedYear}</p>}
+              {book.pages && <p><strong>Pages:</strong> {book.pages}</p>}
+              {book.category && <p><strong>Category:</strong> {book.category}</p>}
               {book.sellerId && (
-                <p><strong>Seller :</strong> {book.sellerId.username} <span className="text-yellow-500">★★★★☆ (124)</span></p>
+                <p><strong>Seller:</strong> {book.sellerId.username} <span className="text-yellow-500">★★★★☆ (124)</span></p>
               )}
             </div>
             <div className="flex space-x-4">

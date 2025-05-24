@@ -23,14 +23,14 @@ import {
 
 function Categories() {
   const categories = [
-    { name: 'Novels', icon: <BookOpenIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <BookOpenIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=novels' },
-    { name: 'Learning', icon: <AcademicCapIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <AcademicCapIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=learning' },
-    { name: 'Top Picks', icon: <StarIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <StarIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=top-picks' },
-    { name: 'World Reads', icon: <GlobeAltIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <GlobeAltIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=world' },
-    { name: 'Classics', icon: <ArchiveBoxIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <ArchiveBoxIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=classics' },
-    { name: 'Thrillers', icon: <MagnifyingGlassIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <MagnifyingGlassIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=thrillers' },
-    { name: 'Romance', icon: <HeartIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <HeartIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=romance' },
-    { name: 'Sci-Fi', icon: <RocketLaunchIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <RocketLaunchIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=sci-fi' },
+    { name: 'Nature', icon: <BookOpenIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <BookOpenIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=nature' },
+    { name: 'Science', icon: <AcademicCapIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <AcademicCapIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=science' },
+    { name: 'History', icon: <ArchiveBoxIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <ArchiveBoxIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=history' },
+    { name: 'Mathematics', icon: <MagnifyingGlassIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <MagnifyingGlassIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=mathematics' },
+    { name: 'Fiction', icon: <HeartIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <HeartIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=fiction' },
+    { name: 'Philosophy', icon: <RocketLaunchIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <RocketLaunchIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=philosophy' },
+    { name: 'Biographies', icon: <GlobeAltIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <GlobeAltIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=biographies' },
+    { name: 'Technology', icon: <StarIcon className="h-6 w-6 text-maroon group-hover:hidden" />, iconHover: <StarIconSolid className="h-6 w-6 text-maroon hidden group-hover:block" />, link: '/books?category=technology' },
   ];
 
   return (

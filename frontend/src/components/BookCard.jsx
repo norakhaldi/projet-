@@ -53,11 +53,12 @@ function BookCard(props) {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 relative">
       <Link to={`/books/${_id}`} className="block">
         <div className="flex flex-col items-center">
-          <img
-            src={coverImage || '/placeholder-book.jpg'}
-            alt={title}
-            className="w-full h-32 object-cover rounded-md mb-4"
-          />
+        <img
+  src={coverImage || '/placeholder-book.jpg'}
+  alt={title}
+  className="w-full h-48 object-contain rounded-md mb-4"
+/>
+
           <h3 className="text-lg font-serif font-semibold text-maroon truncate w-full text-center">{title}</h3>
           <p className="text-gray-600 text-sm mb-2">by {author}</p>
           <p className="text-primary font-bold mb-2">DA{price.toFixed(2)}</p>
