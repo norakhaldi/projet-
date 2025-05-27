@@ -1,20 +1,21 @@
 const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    author: { type: String, required: true },
-    description: { type: String },
-    price: { type: Number, required: true },
-    coverImage: { type: String }, // URL de l'image de couverture
-    filePath: { type: String },   // Chemin du fichier (PDF ou EPUB)
-    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Associate book with seller
-    featured: { type: Boolean, default: false }, // For featured books
-    category: { type: String }, // Added for frontend compatibility
-    isbn: { type: String }, // Added for frontend compatibility
-    publishedYear: { type: String }, // Added for frontend compatibility
-    pages: { type: Number }, // Added for frontend compatibility
-    condition: { type: String, enum: ['new', 'like-new', 'very-good', 'good', 'acceptable'] }, // Added for frontend
-    createdAt: { type: Date, default: Date.now },
+  title: { type: String, required: true },
+  author: { type: String, required: true },
+  description: { type: String },
+  price: { type: Number, required: true },
+  coverImage: { type: String },
+  filePath: { type: String },
+  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  featured: { type: Boolean, default: false },
+  category: { type: String },
+  isbn: { type: String },
+  publishedYear: { type: String },
+  pages: { type: Number },
+  condition: { type: String, enum: ['new', 'like-new', 'very-good', 'good', 'acceptable'] },
+  sold: { type: Boolean, default: false }, // ✅ ajouté
+  createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model('Book', bookSchema);

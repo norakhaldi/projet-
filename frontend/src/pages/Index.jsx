@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Navbar from '@/components/Navbar';
+
 import Hero from '@/components/Hero.jsx';
 import Categories from '@/components/Categories';
 import FeaturedBooks from '@/components/FeaturedBooks';
@@ -33,7 +33,7 @@ function Index() {
 
   return (
     <div>
-      <Navbar />
+     
       <Hero />
       {isLoading ? (
         <div className="text-center py-12">Loading featured books...</div>

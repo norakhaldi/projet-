@@ -46,9 +46,15 @@ const fetchBooksFromGoogle = async (query) => {
         publishedYear: info.publishedDate?.slice(0, 4) || '',
         pages: info.pageCount || 200,
         condition: 'like-new',
+        sold: false,
         createdAt: new Date(),
       };
     });
+    await Book.updateMany(
+      { sold: { $exists: false } },
+      { $set: { sold: false } }
+    );
+    console.log('🔄 Updated existing books without sold field');
   } catch (error) {
     console.error(`❌ Error fetching books for "${query}":`, error.message);
     return [];

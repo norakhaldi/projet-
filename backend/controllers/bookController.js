@@ -13,13 +13,19 @@ exports.getFeaturedBooks = async (req, res) => {
 
 
 exports.getAllBooks = async (req, res) => {
+    const category = req.query.category;
     try {
-        const books = await Book.find().populate('sellerId', 'username');
+        let filter = {};
+        if (category) {
+            filter.category = category;
+        }
+        const books = await Book.find(filter).populate('sellerId', 'username');
         res.status(200).json(books);
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la récupération des livres.', error });
     }
 };
+
 
 exports.getBookById = async (req, res) => {
     const { id } = req.params;

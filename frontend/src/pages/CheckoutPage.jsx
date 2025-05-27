@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
+
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatPrice } from "@/lib/formatPrice";
 
 function generateOrderId() {
   return "ORD" + Math.floor(Math.random() * 1000000);
@@ -54,12 +55,12 @@ function CheckoutPage() {
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
-  const shippingCost = 4.99;
+  const shippingCost = 5;
   const total = subtotal + shippingCost;
 
   return (
     <div>
-      <Navbar />
+     
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-6">Checkout</h1>
 
@@ -151,15 +152,15 @@ function CheckoutPage() {
                 <h2 className="text-lg font-semibold mb-3">Order Summary</h2>
                 <div className="flex justify-between mb-1 text-sm">
                   <span>Subtotal ({cartItems.length} items)</span>
-                  <span>DA{subtotal.toFixed(2)}</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between mb-1 text-sm">
                   <span>Shipping</span>
-                  <span>DA{shippingCost.toFixed(2)}</span>
+                  <span>{formatPrice(shippingCost)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-base">
                   <span>Total</span>
-                  <span>DA{total.toFixed(2)}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
               </div>
 

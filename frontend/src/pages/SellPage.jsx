@@ -1,12 +1,12 @@
 import React from 'react';
-import Navbar from '@/components/Navbar';
+
 import Footer from '@/components/Footer';
 import SellForm from '@/components/SellForm';
 
 function SellPage() {
   return (
     <div>
-      <Navbar />
+     
       <div className="bg-secondary/10 py-12">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">

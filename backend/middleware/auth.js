@@ -1,25 +1,26 @@
 const jwt = require('jsonwebtoken');
 
 const authenticate = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1]; // Expect "Bearer <token>"
+    const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-        return res.status(401).json({ message: 'No token provided.' });
+        return res.status(401).json({ message: 'Aucun token fourni.' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Use your secret from .env
-        req.user = decoded;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Contient userId et role
         next();
     } catch (error) {
-        return res.status(401).json({ message: 'Invalid token.', error });
+        console.error("❌ Token invalide :", error);
+        return res.status(401).json({ message: 'Token invalide.', error });
     }
 };
 
 const isAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
+    if (req.user?.role === 'admin') {
         next();
     } else {
-        return res.status(403).json({ message: 'Admin access required.' });
+        return res.status(403).json({ message: 'Accès administrateur requis.' });
     }
 };
 

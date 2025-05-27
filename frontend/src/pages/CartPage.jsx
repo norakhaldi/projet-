@@ -1,16 +1,17 @@
 import React from 'react';
-import Navbar from '@/components/Navbar';
+
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
+import { formatPrice } from '@/lib/formatPrice';
 
 function CartPage() {
   const { cartItems, removeFromCart } = useCart();
 
   return (
     <div>
-      <Navbar />
+      
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-serif font-bold mb-8">Your Shopping Cart</h1>
 
@@ -26,7 +27,7 @@ function CartPage() {
                 <div>
                   <p className="font-semibold">{item.title}</p>
                   <p className="text-sm text-gray-600">{item.author}</p>
-                  <p className="text-primary font-bold">DA{item.price.toFixed(2)}</p>
+                  <p className="text-primary font-bold">DA{formatPrice(item.price)}</p>
                 </div>
                 <Button
                   variant="outline"
