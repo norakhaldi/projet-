@@ -58,7 +58,7 @@ const Hero = () => {
           </Button>
         </div>
 
-        {/* Category Buttons */}
+        {/* Category Buttons 
         <div className="flex flex-wrap justify-center gap-4 mt-8">
           <Button variant="outline" className="border-white text-white hover:bg-white/20">
             Browse Fiction
@@ -72,8 +72,8 @@ const Hero = () => {
           <Button variant="outline" className="border-white text-white hover:bg-white/20">
             Rare Books
           </Button>
-        </div>
-      </div>
+        </div> */}
+      </div> 
     </div>
   );
 };

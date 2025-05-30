@@ -21,7 +21,7 @@ exports.register = async (req, res) => {
         const user = new User({
             username,
             email,
-            password: hashedPassword,
+            password,
             role: role || "user"
         });
 
@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
         const token = jwt.sign(
             { userId: user._id, role: user.role },
             JWT_SECRET,
-            { expiresIn: "1h" }
+            { expiresIn: "2h" }
         );
 
         res.status(201).json({ message: "Utilisateur créé avec succès.", token, username: user.username });

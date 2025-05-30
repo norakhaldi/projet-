@@ -1,4 +1,3 @@
-// pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -20,6 +19,15 @@ function ProfilePage() {
   const [wishlistBooks, setWishlistBooks] = useState([]);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // State for form fields
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: 'johnsmith@example.com', // Keeping this as a placeholder, you can remove or fetch from backend
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: '',
+  });
 
   const { data: userData, isLoading: isUserLoading } = useQuery({
     queryKey: ['user'],
@@ -70,13 +78,42 @@ function ProfilePage() {
     });
   };
 
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleSettingsSubmit = (e) => {
     e.preventDefault();
+    // Basic validation for passwords
+    if (formData.newPassword !== formData.confirmNewPassword) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Les nouveaux mots de passe ne correspondent pas.",
+      });
+      return;
+    }
+
+    // Log form data (replace with backend API call later)
+    console.log('Form submitted:', formData);
+
     toast({
-      variant: "destructive",
-      title: "Non disponible",
-      description: "La mise à jour du profil n’est pas encore disponible.",
+      title: "Succès",
+      description: "Les modifications ont été enregistrées. (Simulation - connectez au backend)",
     });
+
+    // Optionally reset password fields after submission
+    setFormData(prev => ({
+      ...prev,
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: '',
+    }));
   };
 
   const handleLogout = async (e) => {
@@ -114,17 +151,17 @@ function ProfilePage() {
                   </div>
                   <h2 className="text-xl font-bold">{userData.username}</h2>
                   <p className="text-sm text-gray-600">{userData.email}</p>
-                  <p className="text-sm text-gray-500 mt-1">Membre depuis {userData.joined}</p>
+                  <p className="text-sm text-gray-500 mt-1">Member since {userData.joined}</p>
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between mb-4">
                     <div className="text-center flex-1">
                       <div className="text-2xl font-bold text-primary">{userData.booksListed}</div>
-                      <div className="text-xs text-gray-500">Annonces</div>
+                      <div className="text-xs text-gray-500">listings</div>
                     </div>
                     <div className="text-center flex-1">
                       <div className="text-2xl font-bold text-primary">{userData.booksSold}</div>
-                      <div className="text-xs text-gray-500">Ventes</div>
+                      <div className="text-xs text-gray-500">sells</div>
                     </div>
                   </div>
                   <nav className="space-y-1">
@@ -144,7 +181,7 @@ function ProfilePage() {
                         <span>{label}</span>
                       </button>
                     ))}
-                    <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-sm rounded-md text-red-600 hover:bg-red-50">
+                    <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-sm rounded-md text-white hover:bg-red-50 hover:text-primary ">
                       <LogOut className="mr-3 h-5 w-5" />
                       <span>Sign Out</span>
                     </button>
@@ -173,7 +210,7 @@ function ProfilePage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-12">Aucune annonce</div>
+                      <div className="text-center py-12">no listing</div>
                     )}
                   </div>
                 </div>
@@ -215,8 +252,15 @@ function ProfilePage() {
                       <ul className="space-y-4">
                         {purchases.data.map(purchase => (
                           <li key={purchase._id} className="border p-4 rounded-md">
-                            <p><strong>Titre:</strong> {purchase.title}</p>
-                            <p><strong>Vendeur:</strong> {purchase.sellerName}</p>
+                            <p><strong>Date:</strong> {new Date(purchase.createdAt).toLocaleDateString()}</p>
+                            <p><strong>Articles achetés:</strong></p>
+                            <ul className="list-disc ml-6 mt-2">
+                              {purchase.items.map(book => (
+                                <li key={book._id}>
+                                  {book.title} – <span className="text-sm text-gray-500">{book.author}</span>
+                                </li>
+                              ))}
+                            </ul>
                           </li>
                         ))}
                       </ul>
@@ -230,7 +274,7 @@ function ProfilePage() {
               {activeTab === 'wishlist' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b">
-                    <h2 className="text-xl font-bold">Your Wishlist</h2>
+                    <h2 className="text-xl font-bold text-primary">Your Wishlist</h2>
                   </div>
                   <div className="p-6">
                     {wishlistBooks.length > 0 ? (
@@ -253,10 +297,67 @@ function ProfilePage() {
 
               {activeTab === 'settings' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden p-6">
-                  <h2 className="text-xl font-bold mb-4">Settings</h2>
-                  <form onSubmit={handleSettingsSubmit}>
-                    <p className="text-gray-600">Les paramètres du profil ne sont pas encore modifiables.</p>
-                    <Button type="submit" className="mt-4">Sauvegarder</Button>
+                  <h2 className="text-xl font-bold mb-4 text-primary">Account Settings</h2>
+                  <form onSubmit={handleSettingsSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                      <input
+                        type="password"
+                        name="currentPassword"
+                        value={formData.currentPassword}
+                        onChange={handleInputChange}
+                        placeholder="Enter your current password"
+                        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={formData.newPassword}
+                        onChange={handleInputChange}
+                        placeholder="Enter new password"
+                        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                      <input
+                        type="password"
+                        name="confirmNewPassword"
+                        value={formData.confirmNewPassword}
+                        onChange={handleInputChange}
+                        placeholder="Confirm new password"
+                        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="mt-4 bg-[#7A1C27] text-white hover:bg-[#7A1C27]/90"
+                    >
+                      Save Changes
+                    </Button>
                   </form>
                 </div>
               )}

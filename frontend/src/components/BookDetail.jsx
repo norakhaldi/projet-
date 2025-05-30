@@ -62,7 +62,7 @@ function BookDetail() {
             <p className="text-gray-700 mb-6">{book.description || 'No Description .'}</p>
             <div className="mb-6 space-y-2">
               <p><strong>Title:</strong> {book.title}</p>
-              <p><strong>Condition:</strong> <span className="text-green-600">{book.condition}</span></p>
+              
               {book.isbn && <p><strong>ISBN:</strong> {book.isbn}</p>}
               {book.publishedYear && <p><strong>Year:</strong> {book.publishedYear}</p>}
               {book.pages && <p><strong>Pages:</strong> {book.pages}</p>}
@@ -81,6 +81,8 @@ function BookDetail() {
                 Add to Wishlist
               </Button>
             </div>
+
+            
           </div>
         </div>
 

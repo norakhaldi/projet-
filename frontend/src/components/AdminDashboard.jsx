@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
-
+import { formatPrice } from '@/lib/formatPrice';
 function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(null); // null = loading, false = not admin, true = admin
   const [books, setBooks] = useState([]);
@@ -90,7 +90,8 @@ function AdminDashboard() {
       const data = await response.json();
       logToStorage(`fetchBooks: Response data: ${JSON.stringify(data)}`);
       if (response.ok) {
-        setBooks(data);
+        setBooks(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+
       } else {
         setError(data.message || 'Erreur lors de la récupération des livres.');
         toast({
@@ -365,7 +366,7 @@ function AdminDashboard() {
 
             {/* Catégorie */}
             <div className="flex flex-col">
-              <label htmlFor="category" className="mb-1 font-medium text-black">Catégorie</label>
+              <label htmlFor="category" className="mb-1 font-medium text-black">Categories</label>
               <input
                 type="text"
                 id="category"
@@ -391,7 +392,7 @@ function AdminDashboard() {
 
             {/* Année de publication */}
             <div className="flex flex-col">
-              <label htmlFor="publishedYear" className="mb-1 font-medium text-black">Année de publication</label>
+              <label htmlFor="publishedYear" className="mb-1 font-medium text-black">date de publication</label>
               <input
                 type="text"
                 id="publishedYear"
@@ -424,11 +425,11 @@ function AdminDashboard() {
                 onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
                 className="border border-primary p-2 rounded" // Added border-primary
               >
-                <option value="new">Neuf</option>
-                <option value="like-new">Comme neuf</option>
-                <option value="very-good">Très bon</option>
-                <option value="good">Bon</option>
-                <option value="acceptable">Acceptable</option>
+                <option value="new">New</option>
+                <option value="like-new">like-new</option>
+                <option value="very-good">very-good</option>
+                <option value="good">good</option>
+                <option value="acceptable">acceptable</option>
               </select>
             </div>
 
@@ -465,7 +466,7 @@ function AdminDashboard() {
                     condition: 'new',
                   });
                 }}
-                className="bg-gray-500 text-white"
+                className="bg-primary text-white"
               >
                 Annuler
               </Button>
@@ -484,34 +485,41 @@ function AdminDashboard() {
             </div>
           ) : books.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {books.map((book) => (
-                <div key={book._id} className="border p-4 rounded">
-                  <h3 className="font-bold">{book.title}</h3>
-                  <p>Author: {book.author}</p>
-                  <p>Price: ${book.price}</p>
-                  <p>Seller: {book.sellerId?.username || 'N/A'}</p>
-                  {book.coverImage && (
-                    <img src={book.coverImage} alt={book.title} className="w-20 h-20 object-cover mt-2" />
-                  )}
-                  <div className="mt-2">
-                    <Button
-                      onClick={() => {
-                        logToStorage(`Modifying book: ${book.title}`);
-                        setSelectedBook(book);
-                      }}
-                      className="mr-2 bg-primary text-white"
-                    >
-                      Modifier
-                    </Button>
-                    <Button
-                      onClick={() => deleteBook(book._id)}
-                      className="bg-primary text-white"
-                    >
-                      Supprimer
-                    </Button>
-                  </div>
-                </div>
-              ))}
+             {books.map((book) => (
+  <div key={book._id} className="border p-4 rounded">
+    <h3 className="font-bold">{book.title}</h3>
+    <p>Author: {book.author}</p>
+    <p>Prix: {formatPrice(book.price)}</p>
+    <p>Seller: {book.sellerId?.username || 'N/A'}</p>
+    {book.coverImage && (
+      <img src={book.coverImage} alt={book.title} className="w-20 h-20 object-cover mt-2" />
+    )}
+    <div className="mt-2 space-x-2">
+      <Button
+        onClick={() => {
+          logToStorage(`Modifying book: ${book.title}`);
+          setSelectedBook(book);
+        }}
+        className="bg-primary text-white"
+      >
+        Modifier
+      </Button>
+      <Button
+        onClick={() => deleteBook(book._id)}
+        className="bg-primary text-white"
+      >
+        Supprimer
+      </Button>
+      <Button
+        onClick={() => navigate(`/book/${book._id}`)}
+        className="bg-primary text-white"
+      >
+        Voir les détails
+      </Button>
+    </div>
+  </div>
+))}
+
             </div>
           ) : (
             <div className="text-center py-4">Aucun livre trouvé.</div>

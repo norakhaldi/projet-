@@ -13,7 +13,7 @@ function CartPage() {
     <div>
       
       <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-serif font-bold mb-8">Your Shopping Cart</h1>
+        <h1 className="text-3xl font-serif font-bold mb-8 text-primary">Your Shopping Cart</h1>
 
         {cartItems.length === 0 ? (
           <p className="text-gray-600">Your cart is empty.</p>
@@ -31,7 +31,7 @@ function CartPage() {
                 </div>
                 <Button
                   variant="outline"
-                  className="text-red-600 border-red-600 hover:bg-red-100"
+                  className="text-white border-red-600 hover:bg-red-100"
                   onClick={() => removeFromCart(item._id)}
                 >
                   Remove

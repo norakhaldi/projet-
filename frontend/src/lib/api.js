@@ -41,7 +41,19 @@ export const getUserListings = () => api.get('/books/user/listings');
 // ✅ New: Orders and Purchases
 export const getUserOrders = () => api.get('/orders');
 
-export const getUserPurchases = () => api.get('/orders/purchases').then(res => res.data);
+// lib/api.js
+export const getUserPurchases = async () => {
+    const res = await fetch('http://localhost:5000/api/orders/purchases', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!res.ok) {
+      throw new Error('Erreur lors de la récupération des achats');
+    }
+    return res.json();
+  };
+  
 
 export default api;
 // Redirection globale si token expiré (401 Unauthorized)

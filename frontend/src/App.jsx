@@ -60,6 +60,8 @@ function App() {
                 <Route path="order-confirmation" element={<OrderConfirmation />} />
                 <Route path="search" element={<SearchResults />} />
                 <Route path="books" element={<BooksList />} />
+                <Route path="/book/:id" element={<BookDetail />} />
+
                 {/* 404 */}
                 <Route
                   path="*"

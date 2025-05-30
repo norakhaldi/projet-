@@ -37,12 +37,12 @@ function OrderConfirmation() {
       <Navbar />
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto border rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold mb-4 text-center">Order Confirmed ✅</h1>
+          <h1 className="text-2xl font-bold mb-4 text-center text-primary">Order Confirmed </h1>
 
           <p className="text-lg mb-2">
             Thank you, <strong>{orderData.name}</strong>! Your order has been placed successfully.
           </p>
-          <p className="mb-4">We’ll notify you when your order is on its way.</p>
+          
 
           <div className="bg-gray-100 rounded p-4 mb-4">
             <p><strong>Order ID:</strong> {orderData.orderId}</p>
