@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
+
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -296,7 +296,7 @@ function AdminDashboard() {
   logToStorage('AdminDashboard: Rendering dashboard');
   return (
     <div>
-      <Navbar />
+      
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-2xl font-bold mb-6 text-black">Tableau de bord Admin - Gestion des Livres</h1>
 

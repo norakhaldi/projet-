@@ -6,6 +6,7 @@ const { authenticate } = require('../middleware/auth');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.get('/profile', authenticate, authController.getProfile);
+router.put('/profile', authenticate, authController.updateProfile);
 router.post('/logout', authenticate, authController.logout);
 router.patch('/profile', authenticate, authController.updateProfile);
 
