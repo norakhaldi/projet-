@@ -41,10 +41,10 @@ exports.getBookById = async (req, res) => {
 };
 
 exports.createBook = async (req, res) => {
-    const { title, author, description, price, category, isbn, publishedYear, pages, condition } = req.body;
-    const coverImage = req.file ? `/uploads/${req.file.filename}` : null;
-
     try {
+        const { title, author, description, price, category, isbn, publishedYear, pages, condition } = req.body;
+        const coverImage = req.file ? `${req.protocol}://${req.get('host')}/Uploads/${req.file.filename}` : null;
+
         const book = new Book({
             title,
             author,
@@ -56,15 +56,23 @@ exports.createBook = async (req, res) => {
             publishedYear,
             pages,
             condition,
-            sellerId: req.user.userId, // From JWT
+            sellerId: req.user.userId,
         });
         await book.save();
-        res.status(201).json(book);
+
+        // Convert coverImage to absolute URL in response
+        const bookResponse = {
+            ...book._doc,
+            coverImage: book.coverImage
+                ? `${req.protocol}://${req.get('host')}/Uploads/${book.coverImage.split('/Uploads/')[1]}`
+                : null,
+        };
+        res.status(201).json(bookResponse);
     } catch (error) {
-        res.status(500).json({ message: 'Erreur lors de la création du livre.', error });
+        console.error('Error creating book:', error);
+        res.status(500).json({ message: 'Erreur lors de la création du livre.', error: error.message });
     }
 };
-
 exports.getUserListings = async (req, res) => {
     try {
         const books = await Book.find({ sellerId: req.user.userId });

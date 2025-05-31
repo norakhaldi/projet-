@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createBook } from '@/lib/api';
 
@@ -26,17 +25,13 @@ function SellForm() {
     image: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const createBookMutation = useMutation({
     mutationFn: createBook,
     onSuccess: () => {
       queryClient.invalidateQueries(['userListings']);
-      toast({
-        title: "Success",
-        description: "Your book has been listed for sale!",
-      });
+      alert('Livre ajouté à la vente !'); // Pop-up matching BookCard
       setBookInfo({
         title: '',
         author: '',
@@ -52,11 +47,7 @@ function SellForm() {
       setImagePreview(null);
     },
     onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Failed to list book.",
-      });
+      alert(error.response?.data?.message || 'Échec de la mise en vente du livre.'); // Error pop-up
     },
   });
 
@@ -68,6 +59,14 @@ function SellForm() {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0] || null;
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('L\'image ne doit pas dépasser 5 Mo.');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez uploader une image valide (JPEG, PNG, etc.).');
+        return;
+      }
       setBookInfo((prev) => ({ ...prev, image: file }));
       const reader = new FileReader();
       reader.onloadend = () => {

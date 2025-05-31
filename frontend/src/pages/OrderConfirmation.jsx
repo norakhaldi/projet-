@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+
 import Footer from "@/components/Footer";
 
 const statusSteps = ["Pending", "Processing", "Shipped", "Delivered"];
@@ -34,7 +34,7 @@ function OrderConfirmation() {
 
   return (
     <div>
-      <Navbar />
+      
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto border rounded-lg shadow p-6">
           <h1 className="text-2xl font-bold mb-4 text-center text-primary">Order Confirmed </h1>

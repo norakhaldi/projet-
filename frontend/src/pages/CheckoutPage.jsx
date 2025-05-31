@@ -5,13 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/formatPrice";
+import api from "@/lib/api";
 
 function generateOrderId() {
   return "ORD" + Math.floor(Math.random() * 1000000);
 }
 
 function CheckoutPage() {
-  const { cartItems, clearCart } = useCart();
+  const { cartItems, clearCart, removeFromCart } = useCart();
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -30,16 +31,68 @@ function CheckoutPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const orderId = generateOrderId();
+    if (!localStorage.getItem("token")) {
+      alert("Veuillez vous connecter pour passer une commande.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      // Fetch the latest status of cart items to check if any are sold
+      const bookIds = cartItems.map((item) => item._id);
+      console.log("Fetching book statuses for IDs:", bookIds); // Debug log
+      const response = await api.post("/books/batch", { ids: bookIds });
+      console.log("Batch response:", response.data); // Debug log
+      const books = response.data;
+
+      // Filter out sold books
+      const soldBooks = books.filter((book) => book.sold);
+      if (soldBooks.length > 0) {
+        soldBooks.forEach((book) => removeFromCart(book._id));
+        alert(
+          `Erreur : Les livres suivants sont déjà vendus et ont été retirés de votre panier : ${soldBooks
+            .map((book) => book.title)
+            .join(", ")}. Veuillez réessayer avec des livres disponibles.`
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
       const orderData = {
-        orderId,
-        ...formData,
+        items: cartItems.map((item) => ({ _id: item._id })),
+        shipping: {
+          fullName: formData.name,
+          address: formData.address,
+          phone: formData.phone,
+          city: "N/A",
+          postalCode: "N/A",
+        },
+        paymentMethod: formData.paymentMethod,
       };
 
+      console.log("Sending order data:", orderData);
+      const responseOrder = await api.post("/orders", orderData);
+      console.log("Order creation response:", responseOrder.data);
+      const newOrder = responseOrder.data.order;
+
       clearCart();
-      navigate("/order-confirmation", { state: orderData });
-    }, 1500);
+      navigate("/order-confirmation", { state: newOrder });
+    } catch (error) {
+      console.error("Error creating order:", error.response?.data || error.message);
+      if (error.response?.data?.error?.includes("Livre déjà vendu")) {
+        alert(
+          `Erreur : Un livre est déjà vendu. Veuillez le retirer de votre panier et réessayer.`
+        );
+      } else {
+        alert(
+          `Erreur lors de la création de la commande: ${
+            error.response?.data?.error || error.message
+          }`
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
@@ -55,7 +108,6 @@ function CheckoutPage() {
           <p>Your cart is empty.</p>
         ) : (
           <div className="flex flex-col md:flex-row gap-8">
-            {/* Form Section */}
             <form onSubmit={handleSubmit} className="space-y-6 max-w-lg flex-1">
               <div>
                 <label className="block mb-1 font-medium">Full Name</label>
@@ -109,9 +161,7 @@ function CheckoutPage() {
               </Button>
             </form>
 
-            {/* Order Summary & Shipping Info */}
             <div className="space-y-4 w-full md:w-80 md:ml-auto">
-              {/* Order Summary */}
               <div className="border rounded-lg p-4 shadow-sm">
                 <h2 className="text-lg font-semibold mb-3 text-primary">Order Summary</h2>
                 <div className="flex justify-between mb-1 text-sm">
@@ -128,14 +178,11 @@ function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Shipping Info */}
               <div className="border rounded-lg p-4 shadow-sm">
                 <h2 className="text-lg font-semibold mb-3 text-primary">Shipping Information</h2>
-                <p className="text-gray-600 text-sm mb-2">
+                <p className="text-gray-500 text-sm mb-2">
                   Orders are typically processed within 1-2 business days and shipped via trusted carriers.
                 </p>
-               
-               
               </div>
             </div>
           </div>

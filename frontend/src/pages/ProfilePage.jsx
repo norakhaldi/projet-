@@ -6,24 +6,26 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Footer from '@/components/Footer';
 import BookCard from '@/components/BookCard';
 import {
   getUser, getUserListings,
-  getUserOrders, getUserPurchases
+  getUserOrders, getUserPurchases, deleteOrder
 } from '@/lib/api';
 
 function ProfilePage() {
   const [activeTab, setActiveTab] = useState('listings');
   const [wishlistBooks, setWishlistBooks] = useState([]);
+  const [deletingOrderId, setDeletingOrderId] = useState(null); // Track deletion state
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient(); // For invalidating queries
 
   // State for form fields
   const [formData, setFormData] = useState({
     fullName: '',
-    email: 'johnsmith@example.com', // Keeping this as a placeholder, you can remove or fetch from backend
+    email: '',
     currentPassword: '',
     newPassword: '',
     confirmNewPassword: '',
@@ -135,6 +137,38 @@ function ProfilePage() {
     }
   };
 
+  // Mutation for deleting an order using deleteOrder from lib/api
+  const deleteOrderMutation = useMutation({
+    mutationFn: (orderId) => deleteOrder(orderId),
+    onSuccess: (data, orderId) => {
+      // Invalidate queries to refresh the orders and purchases
+      queryClient.invalidateQueries(['userOrders']);
+      queryClient.invalidateQueries(['userPurchases']);
+      toast({
+        title: 'Succès',
+        description: 'Commande supprimée avec succès.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: error.message || 'Erreur lors de la suppression de la commande.',
+      });
+    },
+    onSettled: () => {
+      setDeletingOrderId(null);
+    },
+  });
+
+  const handleDeleteOrder = (orderId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) {
+      return;
+    }
+    setDeletingOrderId(orderId);
+    deleteOrderMutation.mutate(orderId);
+  };
+
   if (isUserLoading) return <div className="text-center py-12">Chargement du profil...</div>;
 
   return (
@@ -149,7 +183,7 @@ function ProfilePage() {
                   <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mx-auto mb-4">
                     <User className="h-12 w-12 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold">{userData.username}</h2>
+                  <h2 className="text-xl font-bold text-primary">{userData.username}</h2>
                   <p className="text-sm text-gray-600">{userData.email}</p>
                   <p className="text-sm text-gray-500 mt-1">Member since {userData.joined}</p>
                 </div>
@@ -181,7 +215,7 @@ function ProfilePage() {
                         <span>{label}</span>
                       </button>
                     ))}
-                    <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-sm rounded-md text-white hover:bg-red-50 hover:text-primary ">
+                    <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-sm rounded-md text-white hover:bg-red-50 hover:text-primary">
                       <LogOut className="mr-3 h-5 w-5" />
                       <span>Sign Out</span>
                     </button>
@@ -195,7 +229,7 @@ function ProfilePage() {
               {activeTab === 'listings' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-bold">My Listings</h2>
+                    <h2 className="text-xl font-bold text-primary">My Listings</h2>
                     <Link to="/sell">
                       <Button className="bg-primary text-white hover:bg-primary/90">+ Add New Listing</Button>
                     </Link>
@@ -219,17 +253,35 @@ function ProfilePage() {
               {activeTab === 'orders' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b">
-                    <h2 className="text-xl font-bold">My Orders</h2>
+                    <h2 className="text-xl font-bold text-primary">My Orders</h2>
                   </div>
                   <div className="p-6">
                     {isOrdersLoading ? (
                       <div className="text-center py-12">Chargement des commandes...</div>
-                    ) : orders?.data?.length > 0 ? (
+                    ) : orders?.length > 0 ? (
                       <ul className="space-y-4">
-                        {orders.data.map(order => (
+                        {orders.map(order => (
                           <li key={order._id} className="border p-4 rounded-md">
                             <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-                            <p><strong>Articles:</strong> {order.items.length}</p>
+                            <p><strong>Articles:</strong></p>
+                            <ul className="list-disc ml-6 mt-2">
+                              {order.items.map(item => (
+                                <li key={item._id}>
+                                  {item.title} – <span className="text-sm text-gray-500">{item.author}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            <p><strong>Address:</strong> {order.shipping?.address || 'N/A'}</p>
+                            <p><strong>Phone:</strong> {order.shipping?.phone || 'N/A'}</p>
+                            <p><strong>Payment Method:</strong> {order.paymentMethod || 'N/A'}</p>
+                            <Button
+                              variant="destructive"
+                              className="mt-2"
+                              onClick={() => handleDeleteOrder(order._id)}
+                              disabled={deletingOrderId === order._id}
+                            >
+                              {deletingOrderId === order._id ? 'Suppression...' : 'Supprimer la commande'}
+                            </Button>
                           </li>
                         ))}
                       </ul>
@@ -243,7 +295,7 @@ function ProfilePage() {
               {activeTab === 'purchases' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b">
-                    <h2 className="text-xl font-bold">My Purchases</h2>
+                    <h2 className="text-xl font-bold text-primary">My Purchases</h2>
                   </div>
                   <div className="p-6">
                     {isPurchasesLoading ? (
@@ -261,6 +313,14 @@ function ProfilePage() {
                                 </li>
                               ))}
                             </ul>
+                            <Button
+                              variant="destructive"
+                              className="mt-2"
+                              onClick={() => handleDeleteOrder(purchase._id)}
+                              disabled={deletingOrderId === purchase._id}
+                            >
+                              {deletingOrderId === purchase._id ? 'Suppression...' : 'Supprimer la commande'}
+                            </Button>
                           </li>
                         ))}
                       </ul>

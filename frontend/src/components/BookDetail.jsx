@@ -2,8 +2,6 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-
 import Footer from '@/components/Footer';
 import FeaturedBooks from '@/components/FeaturedBooks';
 import { getBook } from '@/lib/api';
@@ -13,28 +11,35 @@ import { formatPrice } from '@/lib/formatPrice';
 
 function BookDetail() {
   const { id } = useParams();
-  const { toast } = useToast();
   const { addToCart } = useCart();
 
   const { data: book, isLoading, error } = useQuery({
     queryKey: ['book', id],
     queryFn: () => getBook(id).then(res => res.data),
   });
+  console.log('BookDetail coverImage:', book?.coverImage); // Debug
 
   const handleAddToWishlist = () => {
-    toast({
-      variant: "destructive",
-      title: "Non disponible",
-      description: "La wishlist n'est pas encore prise en charge.",
-    });
+    const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    const existing = wishlist.find(item => item._id === book._id);
+    if (!existing) {
+      wishlist.push({
+        _id: book._id,
+        title: book.title,
+        author: book.author,
+        price: book.price,
+        coverImage: book.coverImage,
+      });
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+      alert(`${book.title} a été ajouté à votre wishlist.`); // Matches BookCard
+    } else {
+      alert(`${book.title} est déjà présent dans votre wishlist.`); // Matches BookCard
+    }
   };
 
   const handleAddToCart = () => {
     addToCart(book);
-    toast({
-      title: "Ajouté au panier",
-      description: `${book.title} a été ajouté à votre panier.`,
-    });
+    alert(`${book.title} a été ajouté à votre panier.`); // Matches BookCard
   };
 
   if (isLoading) return <div className="text-center py-12">Chargement...</div>;
@@ -62,7 +67,6 @@ function BookDetail() {
             <p className="text-gray-700 mb-6">{book.description || 'No Description .'}</p>
             <div className="mb-6 space-y-2">
               <p><strong>Title:</strong> {book.title}</p>
-              
               {book.isbn && <p><strong>ISBN:</strong> {book.isbn}</p>}
               {book.publishedYear && <p><strong>Year:</strong> {book.publishedYear}</p>}
               {book.pages && <p><strong>Pages:</strong> {book.pages}</p>}
@@ -81,8 +85,6 @@ function BookDetail() {
                 Add to Wishlist
               </Button>
             </div>
-
-            
           </div>
         </div>
 

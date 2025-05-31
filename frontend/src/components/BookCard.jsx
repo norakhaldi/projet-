@@ -8,6 +8,7 @@ function BookCard(props) {
   const { addToCart } = useCart();
 
   const book = props.book || props;
+  console.log('BookCard coverImage:', book.coverImage); // Debug
   const {
     _id,
     title,

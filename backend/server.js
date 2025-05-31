@@ -11,7 +11,7 @@ const app = express();
 // Middleware
 app.use(cors({ origin: 'http://localhost:5173' })); // Match your frontend port
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'Uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Changed to lowercase 'uploads'
 
 // Test route to confirm server is up
 app.get('/test', (req, res) => {
@@ -23,7 +23,6 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/books', require('./routes/bookRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
 app.use('/api/orders', require('./routes/order'));
-
 
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI;
@@ -41,7 +40,7 @@ mongoose.connect(MONGO_URI)
 
 // Create uploads directory if it doesn't exist
 const fs = require('fs');
-const uploadDir = path.join(__dirname, 'Uploads');
+const uploadDir = path.join(__dirname, 'uploads'); // Changed to lowercase 'uploads'
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }

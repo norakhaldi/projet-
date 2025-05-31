@@ -38,10 +38,20 @@ export const removeFromCart = (itemId) => api.delete(`/cart/${itemId}`);
 // User-specific books
 export const getUserListings = () => api.get('/books/user/listings');
 
-// ✅ New: Orders and Purchases
-export const getUserOrders = () => api.get('/orders');
+// Orders
+export const getUserOrders = async () => {
+    try {
+        const response = await api.get('/orders');
+        console.log("Fetched orders:", response.data); // Log the fetched orders
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching orders:", error.response?.data || error.message);
+        throw error;
+    }
+};
+export const deleteOrder = (orderId) => api.delete(`/orders/${orderId}`);
 
-// lib/api.js
+// Purchases
 export const getUserPurchases = async () => {
     const res = await fetch('http://localhost:5000/api/orders/purchases', {
       headers: {
@@ -52,10 +62,10 @@ export const getUserPurchases = async () => {
       throw new Error('Erreur lors de la récupération des achats');
     }
     return res.json();
-  };
-  
+};
 
 export default api;
+
 // Redirection globale si token expiré (401 Unauthorized)
 api.interceptors.response.use(
     response => response,
@@ -67,5 +77,4 @@ api.interceptors.response.use(
       }
       return Promise.reject(error);
     }
-  );
-  
+);
