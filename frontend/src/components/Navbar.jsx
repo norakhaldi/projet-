@@ -44,9 +44,9 @@ function Navbar() {
   const currentIsLoggedIn = !!localStorage.getItem('token');
 
   return (
-    <nav className="bg-white shadow-md">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center">
+    <nav className="bg-white shadow-md ">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center ">
+        <div className="flex items-center ">
           <span className="text-2xl font-bold text-maroon">Books Emporium</span>
         </div>
         <div className="flex space-x-6 items-center">

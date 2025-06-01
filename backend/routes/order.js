@@ -133,7 +133,8 @@ router.delete('/:id', authenticate, async (req, res) => {
     // Check if the user is either the buyer or the seller
     if (
       order.buyerId.toString() !== req.user.userId &&
-      order.sellerId.toString() !== req.user.userId
+      order.sellerId.toString() !== req.user.userId &&
+      req.user.role !== 'admin' // Add admin role check
     ) {
       return res.status(403).json({ error: 'Non autorisé à supprimer cette commande' });
     }
