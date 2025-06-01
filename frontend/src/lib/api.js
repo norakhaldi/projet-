@@ -10,13 +10,12 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    console.log('Sending token:', token); // Debug token
+    console.log('Sending token:', token);
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Redirection for 401 Unauthorized
 api.interceptors.response.use(
   response => response,
   error => {
@@ -35,6 +34,10 @@ export const getBooks = () => api.get('/books');
 export const getBook = (id) => api.get(`/books/${id}`);
 export const createBook = (bookData) =>
   api.post('/books', bookData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+export const updateBook = (id, bookData) =>
+  api.put(`/books/${id}`, bookData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 

@@ -52,7 +52,7 @@ function ProfilePage() {
     },
     onError: (error) => {
       console.error('getUser error:', error);
-      alert('Erreur : Impossible de charger les données utilisateur. Veuillez réessayer.');
+      alert('Error: Unable to load user data. Please try again.');
     },
   });
 
@@ -84,7 +84,7 @@ function ProfilePage() {
     const updatedWishlist = wishlistBooks.filter(book => book._id !== id);
     setWishlistBooks(updatedWishlist);
     localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
-    alert('Livre retiré de votre liste de souhaits.');
+    alert('Book removed from your wishlist.');
   };
 
   const handleInputChange = (e) => {
@@ -100,7 +100,7 @@ function ProfilePage() {
     onSuccess: (data) => {
       console.log('Profile update success:', data);
       queryClient.invalidateQueries(['user']);
-      alert(formData.newPassword ? 'Mot de passe modifié avec succès.' : 'Profil mis à jour avec succès.');
+      alert(formData.newPassword ? 'Password changed successfully.' : 'Profile updated successfully.');
       setFormData(prev => ({
         ...prev,
         currentPassword: '',
@@ -112,12 +112,12 @@ function ProfilePage() {
       console.error('Profile update error:', error.response?.data || error.message);
       if (error.response?.status === 401) {
         alert(error.response.data.message?.includes('Token')
-          ? 'Erreur : Session invalide ou expirée. Veuillez vous reconnecter.'
-          : 'Erreur : Authentification requise.');
+          ? 'Error: Invalid or expired session. Please log in again.'
+          : 'Error: Authentication required.');
       } else if (error.response?.status === 400) {
-        alert(error.response.data.message || 'Erreur : Échec de la mise à jour du profil.');
+        alert(error.response.data.message || 'Error: Failed to update profile.');
       } else {
-        alert('Erreur : Service indisponible. Veuillez réessayer plus tard.');
+        alert('Error: Service unavailable. Please try again later.');
       }
     },
   });
@@ -130,17 +130,17 @@ function ProfilePage() {
     if (formData.newPassword || formData.confirmNewPassword) {
       if (!formData.currentPassword) {
         console.log('Missing current password');
-        alert('Erreur : Veuillez entrer votre mot de passe actuel.');
+        alert('Error: Please enter your current password.');
         return;
       }
       if (formData.newPassword !== formData.confirmNewPassword) {
         console.log('Passwords do not match');
-        alert('Erreur : Les nouveaux mots de passe ne correspondent pas.');
+        alert('Error: New passwords do not match.');
         return;
       }
       if (formData.newPassword.length < 3) {
         console.log('Password too short');
-        alert('Erreur : Le nouveau mot de passe doit contenir au moins 3 caractères.');
+        alert('Error: New password must be at least 3 characters long.');
         return;
       }
     }
@@ -160,7 +160,7 @@ function ProfilePage() {
 
     if (Object.keys(profileData).length === 0) {
       console.log('No changes to save');
-      alert('Erreur : Aucun changement à enregistrer.');
+      alert('Error: No changes to save.');
       return;
     }
 
@@ -179,10 +179,9 @@ function ProfilePage() {
         },
       });
       console.log('Logout response:', response.status);
-    //  alert('Vous avez été déconnecté.');
     } catch (error) {
       console.error('Logout error:', error);
-      alert('Erreur : Échec de la déconnexion. Veuillez réessayer.');
+      alert('Error: Failed to log out. Please try again.');
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('username');
@@ -195,11 +194,11 @@ function ProfilePage() {
     onSuccess: () => {
       queryClient.invalidateQueries(['userOrders']);
       queryClient.invalidateQueries(['userPurchases']);
-      alert('Commande supprimée avec succès.');
+      alert('Order deleted successfully.');
     },
     onError: (error) => {
       console.error('Delete order error:', error);
-      alert(error.message || 'Erreur : Échec de la suppression de la commande.');
+      alert(error.message || 'Error: Failed to delete order.');
     },
     onSettled: () => {
       setDeletingOrderId(null);
@@ -207,14 +206,14 @@ function ProfilePage() {
   });
 
   const handleDeleteOrder = (orderId) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')) {
+    if (!confirm('Are you sure you want to delete this order?')) {
       return;
     }
     setDeletingOrderId(orderId);
     deleteOrderMutation.mutate(orderId);
   };
 
-  if (isUserLoading) return <div className="text-center py-12">Chargement du profil...</div>;
+  if (isUserLoading) return <div className="text-center py-12">Loading profile...</div>;
 
   return (
     <div>
@@ -230,26 +229,26 @@ function ProfilePage() {
                   </div>
                   <h2 className="text-xl font-bold text-primary">{userData.username}</h2>
                   <p className="text-sm text-gray-600">{userData.email}</p>
-                  <p className="text-sm text-gray-500 mt-1">Membre depuis {userData.joined}</p>
+                  <p className="text-sm text-gray-500 mt-1">Member since {userData.joined}</p>
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between mb-4">
                     <div className="text-center flex-1">
                       <div className="text-2xl font-bold text-primary">{userData.booksListed}</div>
-                      <div className="text-xs text-gray-500">Annonces</div>
+                      <div className="text-xs text-gray-500">Listings</div>
                     </div>
                     <div className="text-center flex-1">
                       <div className="text-2xl font-bold text-primary">{userData.booksSold}</div>
-                      <div className="text-xs text-gray-500">Ventes</div>
+                      <div className="text-xs text-gray-500">Sales</div>
                     </div>
                   </div>
                   <nav className="space-y-1">
                     {[
-                      { key: 'listings', label: 'Mes annonces', icon: <BookIcon /> },
-                      { key: 'orders', label: 'Commandes', icon: <Package /> },
-                      { key: 'purchases', label: 'Achats', icon: <ShoppingBag /> },
-                      { key: 'wishlist', label: 'Liste de souhaits', icon: <Heart /> },
-                      { key: 'settings', label: 'Paramètres', icon: <Settings /> },
+                      { key: 'listings', label: 'My Listings', icon: <BookIcon /> },
+                      { key: 'orders', label: 'Orders', icon: <Package /> },
+                      { key: 'purchases', label: 'Purchases', icon: <ShoppingBag /> },
+                      { key: 'wishlist', label: 'Wishlist', icon: <Heart /> },
+                      { key: 'settings', label: 'Settings', icon: <Settings /> },
                     ].map(({ key, label, icon }) => (
                       <button
                         key={key}
@@ -262,7 +261,7 @@ function ProfilePage() {
                     ))}
                     <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-sm rounded-md text-red-600 hover:bg-red-50">
                       <LogOut className="mr-3 h-5 w-5" />
-                      <span>Déconnexion</span>
+                      <span>Logout</span>
                     </button>
                   </nav>
                 </div>
@@ -274,14 +273,14 @@ function ProfilePage() {
               {activeTab === 'listings' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-primary">Mes annonces</h2>
+                    <h2 className="text-xl font-bold text-primary">My Listings</h2>
                     <Link to="/sell">
-                      <Button className="bg-primary text-white hover:bg-primary/90">+ Ajouter une nouvelle annonce</Button>
+                      <Button className="bg-primary text-white hover:bg-primary/90">+ Add New Listing</Button>
                     </Link>
                   </div>
                   <div className="p-6">
                     {isListingsLoading ? (
-                      <div className="text-center py-12">Chargement...</div>
+                      <div className="text-center py-12">Loading...</div>
                     ) : userListedBooks?.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {userListedBooks.map(book => (
@@ -289,7 +288,7 @@ function ProfilePage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-12">Aucune annonce</div>
+                      <div className="text-center py-12">No listings</div>
                     )}
                   </div>
                 </div>
@@ -298,17 +297,17 @@ function ProfilePage() {
               {activeTab === 'orders' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b">
-                    <h2 className="text-xl font-bold text-primary">Mes commandes</h2>
+                    <h2 className="text-xl font-bold text-primary">My Orders</h2>
                   </div>
                   <div className="p-6">
                     {isOrdersLoading ? (
-                      <div className="text-center py-12">Chargement des commandes...</div>
+                      <div className="text-center py-12">Loading orders...</div>
                     ) : orders?.length > 0 ? (
                       <ul className="space-y-4">
                         {orders.map(order => (
                           <li key={order._id} className="border p-4 rounded-md">
-                            <p><strong>Date :</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-                            <p><strong>Articles :</strong></p>
+                            <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                            <p><strong>Items:</strong></p>
                             <ul className="list-disc ml-6 mt-2">
                               {order.items.map(item => (
                                 <li key={item._id}>
@@ -316,22 +315,22 @@ function ProfilePage() {
                                 </li>
                               ))}
                             </ul>
-                            <p><strong>Adresse :</strong> {order.shipping?.address || 'N/A'}</p>
-                            <p><strong>Téléphone :</strong> {order.shipping?.phone || 'N/A'}</p>
-                            <p><strong>Méthode de paiement :</strong> {order.paymentMethod || 'N/A'}</p>
+                            <p><strong>Address:</strong> {order.shipping?.address || 'N/A'}</p>
+                            <p><strong>Phone:</strong> {order.shipping?.phone || 'N/A'}</p>
+                            <p><strong>Payment Method:</strong> {order.paymentMethod || 'N/A'}</p>
                             <Button
                               variant="destructive"
                               className="mt-2"
                               onClick={() => handleDeleteOrder(order._id)}
                               disabled={deletingOrderId === order._id}
                             >
-                              {deletingOrderId === order._id ? 'Suppression...' : 'Supprimer la commande'}
+                              {deletingOrderId === order._id ? 'Deleting...' : 'Delete Order'}
                             </Button>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <div className="text-center py-12">Aucune commande</div>
+                      <div className="text-center py-12">No orders</div>
                     )}
                   </div>
                 </div>
@@ -340,17 +339,17 @@ function ProfilePage() {
               {activeTab === 'purchases' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b">
-                    <h2 className="text-xl font-bold text-primary">Mes achats</h2>
+                    <h2 className="text-xl font-bold text-primary">My Purchases</h2>
                   </div>
                   <div className="p-6">
                     {isPurchasesLoading ? (
-                      <div className="text-center py-12">Chargement...</div>
+                      <div className="text-center py-12">Loading...</div>
                     ) : purchases?.data?.length > 0 ? (
                       <ul className="space-y-4">
                         {purchases.data.map(purchase => (
                           <li key={purchase._id} className="border p-4 rounded-md">
-                            <p><strong>Date :</strong> {new Date(purchase.createdAt).toLocaleDateString()}</p>
-                            <p><strong>Articles achetés :</strong></p>
+                            <p><strong>Date:</strong> {new Date(purchase.createdAt).toLocaleDateString()}</p>
+                            <p><strong>Purchased Items:</strong></p>
                             <ul className="list-disc ml-6 mt-2">
                               {purchase.items.map(book => (
                                 <li key={book._id}>
@@ -364,13 +363,13 @@ function ProfilePage() {
                               onClick={() => handleDeleteOrder(purchase._id)}
                               disabled={deletingOrderId === purchase._id}
                             >
-                              {deletingOrderId === purchase._id ? 'Suppression...' : 'Supprimer la commande'}
+                              {deletingOrderId === purchase._id ? 'Deleting...' : 'Delete Order'}
                             </Button>
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <div className="text-center py-12">Aucun achat</div>
+                      <div className="text-center py-12">No purchases</div>
                     )}
                   </div>
                 </div>
@@ -379,7 +378,7 @@ function ProfilePage() {
               {activeTab === 'wishlist' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                   <div className="p-6 border-b">
-                    <h2 className="text-xl font-bold text-primary">Votre liste de souhaits</h2>
+                    <h2 className="text-xl font-bold text-primary">Your Wishlist</h2>
                   </div>
                   <div className="p-6">
                     {wishlistBooks.length > 0 ? (
@@ -394,7 +393,7 @@ function ProfilePage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-12">Votre liste de souhaits est vide</div>
+                      <div className="text-center py-12">Your wishlist is empty</div>
                     )}
                   </div>
                 </div>
@@ -402,16 +401,16 @@ function ProfilePage() {
 
               {activeTab === 'settings' && (
                 <div className="bg-white rounded-lg shadow-md border overflow-hidden p-6">
-                  <h2 className="text-xl font-bold mb-4 text-primary">Paramètres du compte</h2>
+                  <h2 className="text-xl font-bold mb-4 text-primary">Account Settings</h2>
                   <form onSubmit={handleSettingsSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                       <input
                         type="text"
                         name="fullName"
                         value={formData.fullName}
                         onChange={handleInputChange}
-                        placeholder="Entrez votre nom complet"
+                        placeholder="Enter your full name"
                         className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#7A1C27] bg-gray-50"
                       />
                     </div>
@@ -422,40 +421,40 @@ function ProfilePage() {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="Entrez votre email"
+                        placeholder="Enter your email"
                         className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#7A1C27] bg-gray-50"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
                       <input
                         type="password"
                         name="currentPassword"
                         value={formData.currentPassword}
                         onChange={handleInputChange}
-                        placeholder="Entrez votre mot de passe actuel"
+                        placeholder="Enter your current password"
                         className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#7A1C27] bg-gray-50"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
                       <input
                         type="password"
                         name="newPassword"
                         value={formData.newPassword}
                         onChange={handleInputChange}
-                        placeholder="Entrez le nouveau mot de passe"
+                        placeholder="Enter new password"
                         className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#7A1C27] bg-gray-50"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirmer le nouveau mot de passe</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
                       <input
                         type="password"
                         name="confirmNewPassword"
                         value={formData.confirmNewPassword}
                         onChange={handleInputChange}
-                        placeholder="Confirmez le nouveau mot de passe"
+                        placeholder="Confirm new password"
                         className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#7A1C27] bg-gray-50"
                       />
                     </div>
@@ -464,7 +463,7 @@ function ProfilePage() {
                       className="mt-4 bg-[#7A1C27] text-white hover:bg-[#7A1C27]/90"
                       disabled={updateProfileMutation.isLoading}
                     >
-                      {updateProfileMutation.isLoading ? 'Mise à jour...' : 'Enregistrer les modifications'}
+                      {updateProfileMutation.isLoading ? 'Updating...' : 'Save Changes'}
                     </Button>
                   </form>
                 </div>

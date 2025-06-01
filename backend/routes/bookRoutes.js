@@ -50,7 +50,13 @@ router.post('/', authenticate, upload.single('image'), (req, res, next) => {
 }); // Créer un livre
 
 // Routes réservées aux administrateurs
-router.put('/:id', authenticate, isAdmin, bookController.updateBook); // Modifier un livre
+router.put('/:id', authenticate, isAdmin, upload.single('image'), (req, res, next) => {
+    // Handle multer errors
+    if (req.fileValidationError) {
+        return res.status(400).json({ message: req.fileValidationError.message });
+    }
+    bookController.updateBook(req, res, next);
+}); // Modifier un livre
 router.delete('/:id', authenticate, isAdmin, bookController.deleteBook); // Supprimer un livre
 
 // POST /api/books/batch - Fetch multiple books by IDs

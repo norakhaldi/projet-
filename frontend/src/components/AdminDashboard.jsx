@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { jwtDecode } from 'jwt-decode';
 import { formatPrice } from '@/lib/formatPrice';
+import { getBooks, createBook, updateBook } from '@/lib/api';
+
 function AdminDashboard() {
-  const [isAdmin, setIsAdmin] = useState(null); // null = loading, false = not admin, true = admin
+  const [isAdmin, setIsAdmin] = useState(null);
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [formData, setFormData] = useState({
@@ -20,103 +20,76 @@ function AdminDashboard() {
     publishedYear: '',
     pages: '',
     condition: 'new',
+    coverImage: '',
   });
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
-  const [error, setError] = useState(null); // Add error state
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const formRef = useRef(null); // Ref for the form
+  const formRef = useRef(null);
 
-  // Persistent logging function
-  const logToStorage = (message) => {
-    try {
-      const logs = JSON.parse(localStorage.getItem('debugLogs') || '[]');
-      logs.push({ timestamp: new Date().toISOString(), message });
-      if (logs.length > 50) {
-        logs.splice(0, logs.length - 50); // Keep only the last 50 logs
-      }
-      localStorage.setItem('debugLogs', JSON.stringify(logs));
-    } catch (error) {
-      console.warn('Log storage failed (QuotaExceededError):', error.message);
-    }
-    console.log(message); // Always log to console
-  };
-
-  // Admin check and fetch books
+  // Check admin status and fetch books
   useEffect(() => {
-    logToStorage('AdminDashboard: Component mounted');
+    console.log('AdminDashboard: Component mounted');
     const token = localStorage.getItem('token');
-    logToStorage(`AdminDashboard: Token found: ${token ? 'Yes' : 'No'}`);
-
     if (!token) {
-      logToStorage('AdminDashboard: No token found, redirecting to login');
+      console.log('AdminDashboard: No token, redirecting to login');
       setIsAdmin(false);
       return;
     }
 
     try {
       const payload = jwtDecode(token);
-      logToStorage(`AdminDashboard: Decoded payload: ${JSON.stringify(payload)}`);
+      console.log('AdminDashboard: Decoded payload:', payload);
       if (payload.role && payload.role.toLowerCase() === 'admin') {
-        logToStorage('AdminDashboard: User is admin');
         setIsAdmin(true);
         fetchBooks();
       } else {
-        logToStorage('AdminDashboard: User is not admin, redirecting to login');
+        console.log('AdminDashboard: Not admin, redirecting to login');
         setIsAdmin(false);
       }
     } catch (error) {
-      logToStorage(`AdminDashboard: Token decoding error: ${error.message}`);
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: 'Token invalide. Veuillez vous reconnecter.',
-      });
+      console.error('AdminDashboard: Token decode error:', error);
+      alert('Erreur : Token invalide. Veuillez vous reconnecter.');
       setIsAdmin(false);
     }
-  }, [navigate]);
+  }, []);
 
-  // Fetch all books
+  // Fetch books
   const fetchBooks = async () => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('token');
-    logToStorage(`fetchBooks: Starting request with token: ${token ? 'Yes' : 'No'}`);
     try {
-      const response = await fetch('http://localhost:5000/api/books', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      logToStorage(`fetchBooks: Response status: ${response.status}`);
-      const data = await response.json();
-      logToStorage(`fetchBooks: Response data: ${JSON.stringify(data)}`);
-      if (response.ok) {
-        setBooks(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-
+      const response = await getBooks();
+      console.log('fetchBooks: Response:', response);
+      console.log('fetchBooks: Books:', response.data);
+      if (Array.isArray(response.data)) {
+        setBooks(response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       } else {
-        setError(data.message || 'Erreur lors de la récupération des livres.');
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: data.message || 'Erreur lors de la récupération des livres.',
-        });
-        if (response.status === 401) {
-          logToStorage('fetchBooks: Unauthorized, redirecting to login');
-          setIsAdmin(false);
-        }
+        console.error('fetchBooks: Response data is not an array:', response.data);
+        setError('Données invalides reçues du serveur.');
+        alert('Erreur : Données invalides reçues du serveur.');
       }
     } catch (error) {
-      logToStorage(`fetchBooks: Error: ${error.name} - ${error.message}`);
-      setError('Erreur réseau.');
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Erreur réseau.' });
+      console.error('fetchBooks: Error:', error);
+      const message = error.response?.data?.message || 'Erreur lors de la récupération des livres.';
+      setError(message);
+      alert(message);
+      if (error.response?.status === 401) {
+        setIsAdmin(false);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   // Create book
-  const createBook = async (e) => {
+  const handleCreateBook = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    if (!formData.title || !formData.author || !formData.price) {
+      alert('Erreur : Titre, auteur et prix sont requis.');
+      return;
+    }
+
     const formDataToSend = new FormData();
     formDataToSend.append('title', formData.title);
     formDataToSend.append('author', formData.author);
@@ -127,50 +100,46 @@ function AdminDashboard() {
     formDataToSend.append('publishedYear', formData.publishedYear);
     formDataToSend.append('pages', formData.pages);
     formDataToSend.append('condition', formData.condition);
+    if (formData.coverImage) {
+      formDataToSend.append('coverImage', formData.coverImage);
+    }
     if (e.target.image.files[0]) {
       formDataToSend.append('image', e.target.image.files[0]);
     }
 
+    console.log('createBook: Sending FormData:', [...formDataToSend.entries()]);
+
     try {
-      const response = await fetch('http://localhost:5000/api/books', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formDataToSend,
+      const response = await createBook(formDataToSend);
+      console.log('createBook: Response:', response.data);
+      alert('Livre créé avec succès.');
+      fetchBooks();
+      setFormData({
+        title: '',
+        author: '',
+        description: '',
+        price: '',
+        category: '',
+        isbn: '',
+        publishedYear: '',
+        pages: '',
+        condition: 'new',
+        coverImage: '',
       });
-      logToStorage(`createBook: Response status: ${response.status}`);
-      const data = await response.json();
-      logToStorage(`createBook: Response data: ${JSON.stringify(data)}`);
-      if (response.ok) {
-        toast({ title: 'Succès', description: 'Livre créé avec succès.' });
-        fetchBooks();
-        setFormData({
-          title: '',
-          author: '',
-          description: '',
-          price: '',
-          category: '',
-          isbn: '',
-          publishedYear: '',
-          pages: '',
-          condition: 'new',
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: data.message || 'Erreur lors de la création du livre.',
-        });
-      }
     } catch (error) {
-      logToStorage(`createBook: Error: ${error.message}`);
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Erreur réseau.' });
+      console.error('createBook: Error:', error);
+      alert(error.response?.data?.message || 'Erreur lors de la création du livre.');
     }
   };
 
   // Update book
-  const updateBook = async (e) => {
+  const handleUpdateBook = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    if (!formData.title || !formData.author || !formData.price) {
+      alert('Erreur : Titre, auteur et prix sont requis.');
+      return;
+    }
+
     const formDataToSend = new FormData();
     formDataToSend.append('title', formData.title);
     formDataToSend.append('author', formData.author);
@@ -181,78 +150,66 @@ function AdminDashboard() {
     formDataToSend.append('publishedYear', formData.publishedYear);
     formDataToSend.append('pages', formData.pages);
     formDataToSend.append('condition', formData.condition);
+    if (formData.coverImage) {
+      formDataToSend.append('coverImage', formData.coverImage);
+    }
     if (e.target.image.files[0]) {
       formDataToSend.append('image', e.target.image.files[0]);
     }
 
+    console.log('updateBook: Sending FormData:', [...formDataToSend.entries()]);
+
     try {
-      const response = await fetch(`http://localhost:5000/api/books/${selectedBook._id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formDataToSend,
-      });
-      logToStorage(`updateBook: Response status: ${response.status}`);
-      const data = await response.json();
-      logToStorage(`updateBook: Response data: ${JSON.stringify(data)}`);
-      if (response.ok) {
-        toast({ title: 'Succès', description: 'Livre mis à jour.' });
-        fetchBooks();
-        setSelectedBook(null);
-        setFormData({
-          title: '',
-          author: '',
-          description: '',
-          price: '',
-          category: '',
-          isbn: '',
-          publishedYear: '',
-          pages: '',
-          condition: 'new',
-        });
+      const response = await updateBook(selectedBook._id, formDataToSend);
+      console.log('updateBook: Response:', response.data);
+      if (response.data.title !== formData.title) {
+        console.warn('updateBook: Title not updated:', response.data.title, 'vs', formData.title);
+        alert('Erreur : Le titre n’a pas été mis à jour sur le serveur. Vérifiez les logs.');
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: data.message || 'Erreur lors de la mise à jour du livre.',
-        });
+        alert('Livre modifié avec succès.');
       }
+      await fetchBooks();
+      setSelectedBook(null);
+      setFormData({
+        title: '',
+        author: '',
+        description: '',
+        price: '',
+        category: '',
+        isbn: '',
+        publishedYear: '',
+        pages: '',
+        condition: 'new',
+        coverImage: '',
+      });
     } catch (error) {
-      logToStorage(`updateBook: Error: ${error.message}`);
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Erreur réseau.' });
+      console.error('updateBook: Error:', error);
+      alert(error.response?.data?.message || 'Erreur lors de la mise à jour du livre.');
+      await fetchBooks();
     }
   };
 
   // Delete book
-  const deleteBook = async (id) => {
-    const token = localStorage.getItem('token');
+  const handleDeleteBook = async (id) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce livre ?')) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/books/${id}`, {
+      await fetch(`http://localhost:5000/api/books/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      logToStorage(`deleteBook: Response status: ${response.status}`);
-      const data = await response.json();
-      logToStorage(`deleteBook: Response data: ${JSON.stringify(data)}`);
-      if (response.ok) {
-        toast({ title: 'Succès', description: 'Livre supprimé.' });
-        fetchBooks();
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: data.message || 'Erreur lors de la suppression du livre.',
-        });
-      }
+      console.log('deleteBook: Book deleted:', id);
+      alert('Livre supprimé avec succès.');
+      fetchBooks();
     } catch (error) {
-      logToStorage(`deleteBook: Error: ${error.message}`);
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Erreur réseau.' });
+      console.error('deleteBook: Error:', error);
+      alert(error.response?.data?.message || 'Erreur lors de la suppression du livre.');
     }
   };
 
-  // Populate form and scroll to form when selectedBook changes
+  // Populate form for editing
   useEffect(() => {
     if (selectedBook) {
-      logToStorage(`Populating form with book: ${selectedBook.title}`);
+      console.log('Populating form with book:', selectedBook);
       setFormData({
         title: selectedBook.title || '',
         author: selectedBook.author || '',
@@ -263,10 +220,9 @@ function AdminDashboard() {
         publishedYear: selectedBook.publishedYear || '',
         pages: selectedBook.pages || '',
         condition: selectedBook.condition || 'new',
+        coverImage: selectedBook.coverImage || '',
       });
-      if (formRef.current) {
-        formRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
+      formRef.current?.scrollIntoView({ behavior: 'smooth' });
     } else {
       setFormData({
         title: '',
@@ -278,175 +234,168 @@ function AdminDashboard() {
         publishedYear: '',
         pages: '',
         condition: 'new',
+        coverImage: '',
       });
     }
   }, [selectedBook]);
 
-  // Render based on isAdmin state
+  // Render states
   if (isAdmin === null) {
-    logToStorage('AdminDashboard: Rendering loading state');
-    return <div>Loading...</div>;
+    return <div className="text-center py-12">Chargement...</div>;
   }
 
   if (!isAdmin) {
-    logToStorage('AdminDashboard: Not admin, rendering Navigate to /login');
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  logToStorage('AdminDashboard: Rendering dashboard');
   return (
-    <div>
-      
+    <div className="bg-secondary/10 min-h-screen">
       <div className="container mx-auto px-4 py-12">
-        <h1 className="text-2xl font-bold mb-6 text-black">Tableau de bord Admin - Gestion des Livres</h1>
+        <h1 className="text-2xl font-bold mb-6 text-primary">Tableau de bord Admin - Gestion des Livres</h1>
 
         {/* Form for Create/Update */}
         <form
           ref={formRef}
-          onSubmit={selectedBook ? updateBook : createBook}
-          className="bg-white p-6 rounded-lg shadow-md mb-6 border-2 border-primary" // Updated border to primary
+          onSubmit={selectedBook ? handleUpdateBook : handleCreateBook}
+          className="bg-white p-6 rounded-lg shadow-md mb-6 border border-primary"
           encType="multipart/form-data"
         >
-          <h2 className="text-xl font-semibold mb-4 text-black">{selectedBook ? 'Modifier un livre' : 'Ajouter un livre'}</h2>
+          <h2 className="text-xl font-semibold mb-4 text-primary">
+            {selectedBook ? 'Modifier un livre' : 'Ajouter un livre'}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Titre */}
-            <div className="flex flex-col">
-              <label htmlFor="title" className="mb-1 font-medium text-black">Titre</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
               <input
                 type="text"
-                id="title"
+                name="title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Titre"
-                className="border p-2 rounded"
+                placeholder="Entrez le titre"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
-
-            {/* Auteur */}
-            <div className="flex flex-col">
-              <label htmlFor="author" className="mb-1 font-medium text-black">Auteur</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Auteur</label>
               <input
                 type="text"
-                id="author"
+                name="author"
                 value={formData.author}
                 onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                placeholder="Auteur"
-                className="border p-2 rounded"
+                placeholder="Entrez l'auteur"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
-
-            {/* Description */}
-            <div className="flex flex-col col-span-2">
-              <label htmlFor="description" className="mb-1 font-medium text-black">Description</label>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea
-                id="description"
+                name="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Description"
-                className="border border-primary p-2 rounded" // Added border-primary
+                placeholder="Entrez la description"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                rows="4"
               />
             </div>
-
-            {/* Prix */}
-            <div className="flex flex-col">
-              <label htmlFor="price" className="mb-1 font-medium text-black">Prix</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Prix</label>
               <input
                 type="number"
-                id="price"
+                name="price"
                 step="0.01"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="Prix"
-                className="border border-primary p-2 rounded" // Added border-primary
+                placeholder="Entrez le prix"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
-
-            {/* Catégorie */}
-            <div className="flex flex-col">
-              <label htmlFor="category" className="mb-1 font-medium text-black">Categories</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
               <input
                 type="text"
-                id="category"
+                name="category"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="Catégorie"
-                className="border border-primary p-2 rounded" // Already has border, updated to border-primary
+                placeholder="Entrez la catégorie"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-
-            {/* ISBN */}
-            <div className="flex flex-col">
-              <label htmlFor="isbn" className="mb-1 font-medium text-black">ISBN</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ISBN</label>
               <input
                 type="text"
-                id="isbn"
+                name="isbn"
                 value={formData.isbn}
                 onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                placeholder="ISBN"
-                className="border p-2 rounded"
+                placeholder="Entrez l'ISBN"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-
-            {/* Année de publication */}
-            <div className="flex flex-col">
-              <label htmlFor="publishedYear" className="mb-1 font-medium text-black">date de publication</label>
-              <input
-                type="text"
-                id="publishedYear"
-                value={formData.publishedYear}
-                onChange={(e) => setFormData({ ...formData, publishedYear: e.target.value })}
-                placeholder="Année de publication"
-                className="border border-primary p-2 rounded" // Already has border, updated to border-primary
-              />
-            </div>
-
-            {/* Nombre de pages */}
-            <div className="flex flex-col">
-              <label htmlFor="pages" className="mb-1 font-medium text-black">Nombre de pages</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Année de publication</label>
               <input
                 type="number"
-                id="pages"
-                value={formData.pages}
-                onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
-                placeholder="Nombre de pages"
-                className="border border-primary p-2 rounded" // Added border-primary
+                name="publishedYear"
+                value={formData.publishedYear}
+                onChange={(e) => setFormData({ ...formData, publishedYear: e.target.value })}
+                placeholder="Entrez l'année"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-
-            {/* Condition */}
-            <div className="flex flex-col">
-              <label htmlFor="condition" className="mb-1 font-medium text-black">Condition</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Pages</label>
+              <input
+                type="number"
+                name="pages"
+                value={formData.pages}
+                onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
+                placeholder="Entrez le nombre de pages"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
               <select
-                id="condition"
+                name="condition"
                 value={formData.condition}
                 onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                className="border border-primary p-2 rounded" // Added border-primary
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="new">New</option>
-                <option value="like-new">like-new</option>
-                <option value="very-good">very-good</option>
-                <option value="good">good</option>
-                <option value="acceptable">acceptable</option>
+                <option value="new">Neuf</option>
+                <option value="like-new">Comme neuf</option>
+                <option value="very-good">Très bon</option>
+                <option value="good">Bon</option>
+                <option value="acceptable">Acceptable</option>
               </select>
             </div>
-
-            {/* Image */}
-            <div className="flex flex-col col-span-2">
-              <label htmlFor="image" className="mb-1 font-medium text-black">Image</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+              <input
+                type="text"
+                name="coverImage"
+                value={formData.coverImage}
+                onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
+                placeholder="Entrez l'URL de l'image"
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nouvelle Image</label>
               <input
                 type="file"
-                id="image"
                 name="image"
-                onChange={(e) => setFormData({ ...formData, coverImage: e.target.files[0] })}
-                className="border p-2 rounded"
+                className="w-full p-2 border rounded-md"
               />
             </div>
           </div>
-          <div className="mt-4">
-            <Button type="submit" className="bg-primary text-white mr-2">
+          <div className="mt-4 flex space-x-2">
+            <Button
+              type="submit"
+              className="bg-[#7A1C27] text-white hover:bg-[#7A1C27]/90"
+            >
               {selectedBook ? 'Mettre à jour' : 'Ajouter'}
             </Button>
             {selectedBook && (
@@ -464,9 +413,10 @@ function AdminDashboard() {
                     publishedYear: '',
                     pages: '',
                     condition: 'new',
+                    coverImage: '',
                   });
                 }}
-                className="bg-primary text-white"
+                className="bg-[#7A1C27] text-white hover:bg-[#7A1C27]/90"
               >
                 Annuler
               </Button>
@@ -476,50 +426,47 @@ function AdminDashboard() {
 
         {/* Books List */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-black">Liste des Livres</h2>
+          <h2 className="text-xl font-semibold mb-4 text-primary">Liste des Livres</h2>
           {isLoading ? (
             <div className="text-center py-4">Chargement des livres...</div>
           ) : error ? (
-            <div className="text-center py-4 text-red-600">
-              Erreur lors du chargement des livres : {error}
-            </div>
+            <div className="text-center py-4 text-red-600">Erreur : {error}</div>
           ) : books.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-             {books.map((book) => (
-  <div key={book._id} className="border p-4 rounded">
-    <h3 className="font-bold">{book.title}</h3>
-    <p>Author: {book.author}</p>
-    <p>Prix: {formatPrice(book.price)}</p>
-    <p>Seller: {book.sellerId?.username || 'N/A'}</p>
-    {book.coverImage && (
-      <img src={book.coverImage} alt={book.title} className="w-20 h-20 object-cover mt-2" />
-    )}
-    <div className="mt-2 space-x-2">
-      <Button
-        onClick={() => {
-          logToStorage(`Modifying book: ${book.title}`);
-          setSelectedBook(book);
-        }}
-        className="bg-primary text-white"
-      >
-        Modifier
-      </Button>
-      <Button
-        onClick={() => deleteBook(book._id)}
-        className="bg-primary text-white"
-      >
-        Supprimer
-      </Button>
-      <Button
-        onClick={() => navigate(`/book/${book._id}`)}
-        className="bg-primary text-white"
-      >
-        Voir les détails
-      </Button>
-    </div>
-  </div>
-))}
-
+              {books.map((book) => (
+                <div key={book._id} className="border p-4 rounded">
+                  <h3 className="font-bold text-primary">{book.title}</h3>
+                  <p>Auteur: {book.author}</p>
+                  <p>Prix: {formatPrice(book.price)}</p>
+                  <p>Vendeur: {book.sellerId?.username || 'N/A'}</p>
+                  {book.coverImage && (
+                    <img src={book.coverImage} alt={book.title} className="w-20 h-20 object-cover mt-2" />
+                  )}
+                  <div className="mt-2 flex space-x-2">
+                    <Button
+                      onClick={() => {
+                        console.log('Editing book:', book);
+                        setSelectedBook(book);
+                      }}
+                      className="bg-[#7A1C27] text-white hover:bg-[#7A1C27]/90"
+                    >
+                      Modifier
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteBook(book._id)}
+                      className="bg-[#7A1C27] text-white hover:bg-[#7A1C27]/90"
+                    >
+                      Supprimer
+                    </Button>
+                    <Button
+                      onClick={() => navigate(`/book/${book._id}`)}
+                      className="bg-[#7A1C27] text-white hover:bg-[#7A1C27]/90"
+                    >
+                      Détails
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-4">Aucun livre trouvé.</div>
