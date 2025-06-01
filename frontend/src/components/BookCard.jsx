@@ -76,7 +76,7 @@ function BookCard(props) {
             </button>
             <button
               onClick={handleAddToCart}
-              className="text-white bg-maroon p-2 rounded-full hover:bg-green-600 transition"
+              className="text-white bg-maroon p-2 rounded-full hover:bg-red-600 transition"
               aria-label="Add to Cart"
             >
               <ShoppingCart className="h-6 w-6" />

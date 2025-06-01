@@ -69,7 +69,7 @@ export const getUserOrders = async () => {
   }
 };
 export const deleteOrder = (orderId) => api.delete(`/orders/${orderId}`);
-
+export const getAllOrders = () => api.get('/orders/all');
 // Purchases
 export const getUserPurchases = async () => {
   try {

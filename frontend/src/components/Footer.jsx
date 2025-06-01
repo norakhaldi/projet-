@@ -76,7 +76,7 @@ function Footer() {
         </div>
         
         <div className="border-t border-white/20 mt-8 pt-8 text-center text-white/60">
-          <p>© {new Date().getFullYear()} Crimson Book Emporium. All rights reserved.</p>
+          <p>© {new Date().getFullYear()}  Books Emporium. All rights reserved.</p>
         </div>
       </div>
     </footer>

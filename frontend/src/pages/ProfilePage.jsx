@@ -259,7 +259,7 @@ function ProfilePage() {
                         <span>{label}</span>
                       </button>
                     ))}
-                    <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-sm rounded-md text-red-600 hover:bg-red-50">
+                    <button onClick={handleLogout} className="w-full flex items-center px-3 py-2 text-sm rounded-md text-white hover:bg-primary/90">
                       <LogOut className="mr-3 h-5 w-5" />
                       <span>Logout</span>
                     </button>

@@ -148,7 +148,7 @@ function CheckoutPage() {
                   className="border p-2 rounded w-full"
                 >
                   <option value="cash">Cash on Delivery</option>
-                  <option value="card">Card (Fake)</option>
+                  <option value="card">Other</option>
                 </select>
               </div>
 

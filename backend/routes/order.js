@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Book = require('../models/book');
 const Order = require('../models/order');
-const auth = require('../middleware/auth');
+const { authenticate, isAdmin } = require('../middleware/auth');
 
-// GET /api/orders - récupère les commandes (achats) de l'utilisateur connecté
-router.get('/', auth.authenticate, async (req, res) => {
+// GET /api/orders - Get orders for the authenticated user
+router.get('/', authenticate, async (req, res) => {
   try {
     const orders = await Order.find({ buyerId: req.user.userId })
       .populate('items')
+      .populate('buyerId', 'username')
       .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
@@ -17,8 +18,23 @@ router.get('/', auth.authenticate, async (req, res) => {
   }
 });
 
-// POST /api/orders - créer une commande
-router.post('/', auth.authenticate, async (req, res) => {
+// GET /api/orders/all - Get all orders (admin only)
+router.get('/all', authenticate, isAdmin, async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate('items', 'title price')
+      .populate('buyerId', 'username')
+      .populate('sellerId', 'username')
+      .sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    console.error('❌ Erreur get all orders :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération de toutes les commandes.' });
+  }
+});
+
+// POST /api/orders - Create an order
+router.post('/', authenticate, async (req, res) => {
   const { items, shipping, paymentMethod } = req.body;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
@@ -78,11 +94,12 @@ router.post('/', auth.authenticate, async (req, res) => {
   }
 });
 
-// GET /api/orders/purchases - commandes (achats) de l'utilisateur
-router.get('/purchases', auth.authenticate, async (req, res) => {
+// GET /api/orders/purchases - Get user purchases
+router.get('/purchases', authenticate, async (req, res) => {
   try {
     const purchases = await Order.find({ buyerId: req.user.userId })
       .populate('items')
+      .populate('buyerId', 'username')
       .sort({ createdAt: -1 });
     res.json(purchases);
   } catch (error) {
@@ -91,11 +108,12 @@ router.get('/purchases', auth.authenticate, async (req, res) => {
   }
 });
 
-// GET /api/orders/sales - ventes de l'utilisateur
-router.get('/sales', auth.authenticate, async (req, res) => {
+// GET /api/orders/sales - Get user sales
+router.get('/sales', authenticate, async (req, res) => {
   try {
     const sales = await Order.find({ sellerId: req.user.userId })
       .populate('items')
+      .populate('buyerId', 'username')
       .sort({ createdAt: -1 });
     res.json(sales);
   } catch (error) {
@@ -104,8 +122,8 @@ router.get('/sales', auth.authenticate, async (req, res) => {
   }
 });
 
-// DELETE /api/orders/:id - supprimer une commande
-router.delete('/:id', auth.authenticate, async (req, res) => {
+// DELETE /api/orders/:id - Delete an order
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate('items');
     if (!order) {

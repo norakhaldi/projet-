@@ -72,7 +72,7 @@ function BookDetail() {
               {book.pages && <p><strong>Pages:</strong> {book.pages}</p>}
               <p><strong>Category:</strong> {formattedCategory}</p>
               {book.sellerId && (
-                <p><strong>Seller:</strong> {book.sellerId.username} <span className="text-yellow-500">★★★★☆ (124)</span></p>
+                <p><strong>Seller:</strong> {book.sellerId.username} <span className="text-yellow-500">★★★★☆ </span></p>
               )}
             </div>
             <div className="flex space-x-4">
@@ -89,7 +89,7 @@ function BookDetail() {
         </div>
 
         <div className="mb-12">
-          <FeaturedBooks title="Vous aimerez aussi" subtitle="Suggestions basées sur ce livre" />
+          <FeaturedBooks title="you may also like"  />
         </div>
       </div>
       <Footer />
